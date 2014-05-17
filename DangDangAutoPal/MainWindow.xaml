@@ -32,6 +32,7 @@
                         <Label Content="备注：" HorizontalAlignment="Left" Margin="34,273,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="45" Height="25"/>
                         <TextBox Height="23" Text="{Binding Remark}" Margin="79,275,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
                         <Button Content="Test" Margin="219,226,29,0" VerticalAlignment="Top" Height="28" Click="OnTest_Click" Grid.Column="1"/>
+                        <Button Content="Cancel" Margin="216,270,32,0" VerticalAlignment="Top" Height="28" Click="OnCancel_Click" Grid.Column="1"/>
                     </Grid>
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>

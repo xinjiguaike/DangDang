@@ -109,6 +109,12 @@ namespace DangDangAutoPal.Models
             cts = new CancellationTokenSource();
         }
 
+        public void CancelWaitting()
+        {
+            if(cts != null)
+                cts.Cancel();
+        }
+
         public bool SetWebDriver(string BrowserType)
         {
             if (BrowserType.Equals("Chrome"))
@@ -148,31 +154,27 @@ namespace DangDangAutoPal.Models
             return true;
         }
 
-        public Task CleanUpAsync()
+        public void CleanUpAsync()
         {
-            return Task.Run(() =>
+            if (driver != null)
             {
-                if (driver != null)
-                {
-                    cts.Cancel();
-                    driver.Quit();
-                }
-            });
+                driver.Quit();
+            }
         }
 
-        public Task<IWebElement>  WaitForElementAsync(string el_mark, string el_flag,  int timeout = 30)
+        public async Task<IWebElement>  WaitForElementAsync(string el_mark, string el_flag,  int timeout = 30)
         {
-            CancellationToken ct = cts.Token;
-            return Task.Run(() =>
+            IWebElement elementFound = await Task.Run(() =>
             {
-                Trace.TraceInformation("Rudy Trace, Searching Element: [" + el_mark + "]");
+                Trace.TraceInformation("Rudy Trace, Searching Element: [{0}]", el_mark);
                 IWebElement ele = null;
                 try
                 {
                     WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeout));
                     ele = wait.Until<IWebElement>((d) =>
                     {
-                        ct.ThrowIfCancellationRequested();//
+                        Trace.TraceInformation("Rudy Trace, Waitting Element: [{0}]", el_mark);
+                        cts.Token.ThrowIfCancellationRequested();
                         if (el_flag.Equals("Id"))
                             return d.FindElement(By.Id(el_mark));
                         else if (el_flag.Equals("Class"))
@@ -188,18 +190,20 @@ namespace DangDangAutoPal.Models
                 }
                 catch (Exception e)
                 {
-                    Trace.TraceInformation(e.Message.ToString() + ", Timeout to find element: [" + el_mark + "]");
+                    Trace.TraceInformation(e.Message.ToString() + ", Timeout to find element: [{0}]", el_mark);
                     return null;
                 }
-                Trace.TraceInformation("Rudy Trace, Found Element: [" + el_mark + "]");
+                Trace.TraceInformation("Rudy Trace, Found Element: [{0}]", el_mark);
                 return ele;
-            }, ct);
+            }, cts.Token);
+
+            return elementFound;
         }
 
 
-        public Task<bool> WaitForPageAsync(string PageTitle, int Seconds)
+        public async Task<bool> WaitForPageAsync(string PageTitle, int Seconds)
         {
-            return Task.Run(() =>
+            bool bRet = await Task.Run(() =>
             {
                 Trace.TraceInformation("Rudy Trace, WaitForPageAsync: Waitting for page [{0}]...", PageTitle);
                 string defaultWindow = driver.CurrentWindowHandle;
@@ -209,6 +213,7 @@ namespace DangDangAutoPal.Models
                 {
                     foreach (string strWindow in driver.WindowHandles)
                     {
+                        cts.Token.ThrowIfCancellationRequested();// Throw the Cancellation Request.
                         try
                         {
                             driver.SwitchTo().Window(strWindow);
@@ -229,7 +234,8 @@ namespace DangDangAutoPal.Models
                 //driver.SwitchTo().Window(defaultWindow);
                 Trace.TraceInformation("Rudy Trace, WaitForPageAsync: Page [{0}] Load Time Out!", PageTitle);
                 return false;
-            });
+            }, cts.Token);
+            return bRet;
         }
 
         public async Task<bool> SetAddressAccoutInfoAsync(string FilePath)
@@ -637,5 +643,34 @@ namespace DangDangAutoPal.Models
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        //===========The implementation of IDispose interface.
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+ 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!m_disposed)
+            {
+                if (disposing)
+                {
+                    driver.Quit();
+                    cts.Dispose();
+                }
+  
+                m_disposed = true;
+            }
+        }
+  
+        ~AutoPal()
+        {
+            Dispose(false);
+        }
+  
+        private bool m_disposed;
+        //================================================
     }
 }

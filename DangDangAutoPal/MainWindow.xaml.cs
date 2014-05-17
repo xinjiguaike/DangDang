@@ -149,7 +149,7 @@ namespace DangDangAutoPal
         {
             Trace.WriteLine("Rudy Trace, Cleaning up the Environment...");
             if (DangDangPal != null)
-                await DangDangPal.CleanUpAsync().ConfigureAwait(false);
+                DangDangPal.CleanUpAsync();
             Trace.WriteLine("Rudy Trace, Clea up done.");
         }
 
@@ -157,10 +157,23 @@ namespace DangDangAutoPal
         {
             await PrepareEnvironmentAsync("Chrome");
             bool bRet = DangDangPal.SetWebDriver("Chrome");
-            if (bRet)
-                await DangDangPal.WaitForElementAsync("rudy", "Class", 10);
-            else
-                Trace.WriteLine("Rudy Trace, OnTest_Click: Set Web Driver Failed.");
+            try
+            {
+                if (bRet)
+                    await DangDangPal.WaitForPageAsync("Rudy Test", 15);
+                else
+                    Trace.WriteLine("Rudy Trace, OnTest_Click: Set Web Driver Failed.");
+            }
+            catch (OperationCanceledException)
+            {
+                Trace.TraceInformation("Rudy Trace, The waiting was cancelled.");
+            }
+        }
+
+        private void OnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            Trace.TraceInformation("Rudy Trace, OnCancel_Click: Begin Cancel.");
+            DangDangPal.CancelWaitting();
         }
     }
 }
