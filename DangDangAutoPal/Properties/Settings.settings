@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="ADSLAccountSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)">account1</Value>
+      <Value Profile="(Default)">ADSLAccount</Value>
     </Setting>
     <Setting Name="ADSLPasswordSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)">pass1</Value>
+      <Value Profile="(Default)">ADSLPass</Value>
     </Setting>
   </Settings>
 </SettingsFile>

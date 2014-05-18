@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:p="clr-namespace:DangDangAutoPal.Properties"
         Title="当当自动拍货" Height="540" Width="480"
-        Closed="MainWindow_Closed">
+        Closed="OnMainWindow_Closed">
     <Grid>
         <TabControl HorizontalAlignment="Left" VerticalAlignment="Top">
             <TabItem Header="自动拍货">
@@ -26,23 +26,21 @@
                         <TextBlock HorizontalAlignment="Left" Margin="34,76,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="206" Grid.ColumnSpan="2"><Run Language="zh-cn" Text="财付通账户密码列表文件："/></TextBlock>
                         <Label Content="单个账户拍货数量：" HorizontalAlignment="Left" Margin="34,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="113" Height="25"/>
                         <Label Content="宽带账户：" HorizontalAlignment="Left" Margin="34,320,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25"/>
-                        <TextBox HorizontalAlignment="Left" Text="{Binding Source={x:Static p:Settings.Default}, Path=ADSLAccountSettings, Mode=TwoWay}" Height="23" Margin="109,322,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
+                        <TextBox HorizontalAlignment="Left" Text="{Binding Source={x:Static p:Settings.Default}, Path=ADSLAccountSettings, Mode=TwoWay}" Height="23" Margin="104,322,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="99" Grid.ColumnSpan="2"/>
                         <Label Content="宽带密码：" HorizontalAlignment="Left" Margin="61,320,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25" Grid.Column="1"/>
-                        <PasswordBox Name="pwdBoxADSL" HorizontalAlignment="Left"  PasswordChanged="OnPWDChanged" Margin="132,322,0,0" VerticalAlignment="Top" Width="79" Height="23" Grid.Column="1"/>
+                        <PasswordBox Name="pwdBoxADSL" HorizontalAlignment="Left"  PasswordChanged="OnPWDChanged" Margin="131,322,0,0" VerticalAlignment="Top" Width="80" Height="23" Grid.Column="1"/>
                         <Label Content="备注：" HorizontalAlignment="Left" Margin="34,273,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="45" Height="25"/>
                         <TextBox Height="23" Text="{Binding Remark}" Margin="79,275,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-                        <Button Content="Test" Margin="219,226,29,0" VerticalAlignment="Top" Height="28" Click="OnTest_Click" Grid.Column="1"/>
-                        <Button Content="Cancel" Margin="216,270,32,0" VerticalAlignment="Top" Height="28" Click="OnCancel_Click" Grid.Column="1"/>
                     </Grid>
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>
                         <ScrollBar HorizontalAlignment="Left" Margin="328,144,0,0" VerticalAlignment="Top"/>
                         <ListBox HorizontalAlignment="Left" Height="207" Margin="75,95,0,0" VerticalAlignment="Top" Width="318"/>
                         <Label Content="d dfdsfsdfdfd" HorizontalAlignment="Left" Margin="75,23,0,0" VerticalAlignment="Top" Width="318" Height="24"/>
-                        <Button Content="停止拍货" Click="OnStopPalling" HorizontalAlignment="Left" Margin="193,389,0,0" VerticalAlignment="Top" Width="85" Height="29"/>
+                        <Button x:Name="btnStop" Content="停止拍货" Click="OnStopPalling" HorizontalAlignment="Left" Margin="193,389,0,0" VerticalAlignment="Top" Width="85" Height="29"/>
                     </Grid>
                 </Grid>
-                
+
             </TabItem>
             <TabItem Header="添加评论">
                 <Grid>

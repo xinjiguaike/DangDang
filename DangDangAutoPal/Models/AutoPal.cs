@@ -96,12 +96,13 @@ namespace DangDangAutoPal.Models
         public string ADSLPassword { get; set; }
         public int SinglePalCount { get; set; }
         public int TimeOut { get; set; }
-
+        
         public int SuccessPalCount { get; set; }
 
         //Functions
         public AutoPal()
         {
+            m_disposed = false;
             QQAccountFile = "";
             TenpayAccountFile = "";
             BindQQAccountFile = "";
@@ -143,57 +144,53 @@ namespace DangDangAutoPal.Models
             }
             else
             {
-                Trace.TraceInformation("Rudy Trace: Invalid Browser Type.");
+                Trace.TraceInformation("Rudy Trace =>Invalid Browser Type.");
                 return false;
             }
 
             driver.Manage().Window.Maximize();
             driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(60));
-            driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(60));
+            //driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(60));
             
             return true;
-        }
-
-        public void CleanUpAsync()
-        {
-            if (driver != null)
-            {
-                driver.Quit();
-            }
         }
 
         public async Task<IWebElement>  WaitForElementAsync(string el_mark, string el_flag,  int timeout = 30)
         {
             IWebElement elementFound = await Task.Run(() =>
             {
-                Trace.TraceInformation("Rudy Trace, Searching Element: [{0}]", el_mark);
+                Trace.TraceInformation("Rudy Trace =>Searching element: [{0}]", el_mark);
                 IWebElement ele = null;
-                try
+                DateTime begins = DateTime.Now;
+                TimeSpan span = DateTime.Now - begins;
+                while ((span.TotalSeconds < timeout) && (ele == null))
                 {
-                    WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeout));
-                    ele = wait.Until<IWebElement>((d) =>
+                    try
                     {
-                        Trace.TraceInformation("Rudy Trace, Waitting Element: [{0}]", el_mark);
-                        cts.Token.ThrowIfCancellationRequested();
                         if (el_flag.Equals("Id"))
-                            return d.FindElement(By.Id(el_mark));
+                            ele = driver.FindElement(By.Id(el_mark));
                         else if (el_flag.Equals("Class"))
-                            return d.FindElement(By.ClassName(el_mark));
+                            ele = driver.FindElement(By.ClassName(el_mark));
                         else if (el_flag.Equals("Name"))
-                            return d.FindElement(By.Name(el_mark));
+                            ele = driver.FindElement(By.Name(el_mark));
                         else if (el_flag.Equals("XPath"))
-                            return d.FindElement(By.XPath(el_mark));
+                            ele = driver.FindElement(By.XPath(el_mark));
                         else
-                            Trace.TraceInformation("Rudy Trace, Element Flag is invalid.");
-                        return null;
-                    });
+                        {
+                            Trace.TraceInformation("Rudy Trace =>Element flag is invalid.");
+                            return null;
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
+                    }     
+                    span = DateTime.Now - begins;
                 }
-                catch (Exception e)
-                {
-                    Trace.TraceInformation(e.Message.ToString() + ", Timeout to find element: [{0}]", el_mark);
-                    return null;
-                }
-                Trace.TraceInformation("Rudy Trace, Found Element: [{0}]", el_mark);
+                if(ele != null)
+                    Trace.TraceInformation("Rudy Trace =>Found element: [{0}]", el_mark);
+                else
+                    Trace.TraceInformation("Rudy Trace =>Time out to find element: [{0}]", el_mark);
                 return ele;
             }, cts.Token);
 
@@ -201,15 +198,15 @@ namespace DangDangAutoPal.Models
         }
 
 
-        public async Task<bool> WaitForPageAsync(string PageTitle, int Seconds)
+        public async Task<bool> WaitForPageAsync(string PageTitle, int timeout = 30)
         {
             bool bRet = await Task.Run(() =>
             {
-                Trace.TraceInformation("Rudy Trace, WaitForPageAsync: Waitting for page [{0}]...", PageTitle);
+                Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Waitting for page [{0}]...", PageTitle);
                 string defaultWindow = driver.CurrentWindowHandle;
                 DateTime begins = DateTime.Now;
                 TimeSpan span = DateTime.Now - begins;
-                while (span.TotalSeconds < Seconds)
+                while (span.TotalSeconds < timeout)
                 {
                     foreach (string strWindow in driver.WindowHandles)
                     {
@@ -219,20 +216,20 @@ namespace DangDangAutoPal.Models
                             driver.SwitchTo().Window(strWindow);
                             if (driver.Title.Contains(PageTitle))
                             {
-                                Trace.TraceInformation("Rudy Trace, WaitForPageAsync: Page [{0}] Load Succeed!", PageTitle);
+                                Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Page [{0}] Load Succeed!", PageTitle);
                                 return true;
                             }
                         }
                         catch (Exception e)
                         {
-                            Trace.TraceInformation("Rudy Exception, WaitForPageAsync: " + e.Message);
+                            Trace.TraceInformation("Rudy Exception=> WaitForPageAsync: " + e.Message);
                         }
                     }
                     span = DateTime.Now - begins;
                 }
-                //Trace.TraceInformation("Rudy Trace: Switch to default window.");
+                //Trace.TraceInformation("Rudy Trace =>Switch to default window.");
                 //driver.SwitchTo().Window(defaultWindow);
-                Trace.TraceInformation("Rudy Trace, WaitForPageAsync: Page [{0}] Load Time Out!", PageTitle);
+                Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Page [{0}] Load Time Out!", PageTitle);
                 return false;
             }, cts.Token);
             return bRet;
@@ -278,7 +275,7 @@ namespace DangDangAutoPal.Models
                 catch (Exception e)
                 {
                     System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
-                    Trace.TraceInformation("Rudy Exception, SetAddressAccoutInfoAsync： " + e.Source + ";" + e.Message);
+                    Trace.TraceInformation("Rudy Exception=> SetAddressAccoutInfoAsync： " + e.Source + ";" + e.Message);
                     return false;
                 }
 
@@ -294,7 +291,7 @@ namespace DangDangAutoPal.Models
                 //driver.Navigate().GoToUrl(Globals.LOGIN_URL);
                 var linkQQLogin = await WaitForElementAsync(Globals.QQ_LOGIN_XPATH, "XPath").ConfigureAwait(false);
                 linkQQLogin.Click();
-                Trace.WriteLine("Rudy Trace, LoginAsync: click QQLogin Link Successed!");
+                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Link Successed!");
 
                 driver.SwitchTo().Window(driver.WindowHandles.Last());
                 driver.SwitchTo().Frame(Globals.QQ_FRAME_NAME);
@@ -312,21 +309,25 @@ namespace DangDangAutoPal.Models
 
                 var btnQQLogin = await WaitForElementAsync(Globals.QQ_LOGINBTN_ID, "Id").ConfigureAwait(false);
                 btnQQLogin.Click();
-                Trace.WriteLine("Rudy Trace, LoginAsync: click QQLogin Button Successed!");
+                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Button Successed!");
             }
             catch (Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, LoginAsync: " + e.Source + ";" + e.Message);
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
+                Trace.TraceInformation("Rudy Exception =>LoginAsync: {0};{1}", e.Source, e.Message);
                 return false;
             }
 
             bool bRet = await WaitForPageAsync(ReturnPageTitle, 30).ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("Rudy Trace: Log in time out.");
+                Trace.TraceInformation("Rudy Trace =>Log in time out.");
                 return false;
             }
-            Trace.TraceInformation("Rudy Trace: Log in succeed.");
+            Trace.TraceInformation("Rudy Trace =>Log in succeed.");
             return true;
         }
 
@@ -335,7 +336,7 @@ namespace DangDangAutoPal.Models
             bool bRet = await LoginAsync(info.QQAccount, info.QQPassword, "dangdang").ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("Log in Failed!");
+                Trace.TraceInformation("Rudy Trace =>Log in Failed!");
                 return false;
             }
 
@@ -400,7 +401,11 @@ namespace DangDangAutoPal.Models
             }
             catch (Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, BindingDeliverAddress: " + e.Message);
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
+                Trace.TraceInformation("Rudy Exception=> BindingDeliverAddress: " + e.Message);
                 return false;
             }
 
@@ -412,18 +417,18 @@ namespace DangDangAutoPal.Models
             bool bRet = await SetAddressAccoutInfoAsync(BindQQAccountFile).ConfigureAwait(false);
             if (bRet)
             {
-                Trace.TraceInformation("Rudy Trace, Set Address Account Info Success!");
+                Trace.TraceInformation("Rudy Trace =>Set Address Account Info Success!");
                 foreach (AccountInfo info in aAccountInfo)
                 {
                     bRet = await BindingDeliverAddress(info).ConfigureAwait(false);
                     if (bRet)
-                        Trace.TraceInformation("Rudy Trace, Accout[{0}]Binding Success!", info.QQAccount);
+                        Trace.TraceInformation("Rudy Trace =>Accout[{0}]Binding Success!", info.QQAccount);
                     else
-                        Trace.TraceInformation("Rudy Trace, Accout[{0}]Binding Failed!", info.QQAccount);
+                        Trace.TraceInformation("Rudy Trace =>Accout[{0}]Binding Failed!", info.QQAccount);
                 }
             }
             else
-                Trace.TraceInformation("Rudy Trace, Set Address Account Info Failed!");
+                Trace.TraceInformation("Rudy Trace =>Set Address Account Info Failed!");
         }
 
         public async Task<bool> PalProductAsync(string ProductLink, string Account, string Password)
@@ -455,10 +460,14 @@ namespace DangDangAutoPal.Models
             }
             catch (Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, PalProductAsync: " + e.Source + ";" + e.Message);
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
+                Trace.TraceInformation("Rudy Exception=> PalProductAsync: " + e.Source + ";" + e.Message);
                 return false;
             }
-            Trace.TraceInformation("Rudy Trace: Switch to payment page succeed.");
+            Trace.TraceInformation("Rudy Trace =>Switch to payment page succeed.");
             return true;
         }
 
@@ -482,10 +491,14 @@ namespace DangDangAutoPal.Models
             }
             catch(Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, SelectPayPlatformAsync: " + e.Source + ";" + e.Message);
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
+                Trace.TraceInformation("Rudy Exception =>SelectPayPlatformAsync: " + e.Source + ";" + e.Message);
                 return false;
             }
-            Trace.TraceInformation("Rudy Trace: Switch to Tenpay page succeed.");
+            Trace.TraceInformation("Rudy Trace =>Switch to Tenpay page succeed.");
             return true;
         }
 
@@ -513,8 +526,8 @@ namespace DangDangAutoPal.Models
 
                 System.Drawing.Point ctrlPassPosition = ctrlPassword.Location;
                 OpenQA.Selenium.Interactions.Actions ctrlAction = new OpenQA.Selenium.Interactions.Actions(driver);
-                Trace.TraceInformation("Rudy Trace, ctrlPassPosition.X = " + ctrlPassPosition.X.ToString());
-                Trace.TraceInformation("Rudy Trace, ctrlPassPosition.Y = " + ctrlPassPosition.Y.ToString());
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = " + ctrlPassPosition.X.ToString());
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = " + ctrlPassPosition.Y.ToString());
                 //ctrlAction.MoveToElement(ctrlPassword, 10, 30);
                 //ctrlAction.Click();
                 await Task.Delay(10000).ConfigureAwait(false);
@@ -526,7 +539,7 @@ namespace DangDangAutoPal.Models
                 AutomationElement ctrlPassword = FindChildElementByClass("Edit", "Chrome_WidgetWin_1");
                 if (ctrlPassword == null)
                 {
-                    Trace.TraceInformation("Rudy Trace, ctrlPassword is null.");
+                    Trace.TraceInformation("Rudy Trace =>ctrlPassword is null.");
                     return false;
                 }
                 var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
@@ -534,15 +547,19 @@ namespace DangDangAutoPal.Models
                     patternValue.SetValue(TenpayPass);
                 else
                 {
-                    Trace.TraceInformation("Rudy Trace, patternValue is null.");
+                    Trace.TraceInformation("Rudy Trace =>patternValue is null.");
                     return false;
                 }*/
 
-                Trace.TraceInformation("Rudy Trace, Tenpay Succeed.");
+                Trace.TraceInformation("Rudy Trace =>Tenpay Succeed.");
             }
             catch(Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, TenpayAsync: " + e.Source + ";" + e.Message);
+                if (e is OperationCanceledException)
+                {
+                    throw e;
+                }
+                Trace.TraceInformation("Rudy Exception =>TenpayAsync: " + e.Source + ";" + e.Message);
                 return false;
             }
 
@@ -552,15 +569,15 @@ namespace DangDangAutoPal.Models
         public async Task<bool> AutoPalProcessAsync(string Account, string Password, string ProductLink)
         {
             await Task.Run(() =>
-                { 
-                    driver.Navigate().GoToUrl(ProductLink);
-                }).ConfigureAwait(false); 
+            { 
+                driver.Navigate().GoToUrl(ProductLink);
+            }).ConfigureAwait(false); 
 
             string PageTitle = driver.Title;
 
             var linkLogin = await WaitForElementAsync(Globals.LOGIN_LINK_CLASS, "Class").ConfigureAwait(false);
             linkLogin.Click();
-            Trace.WriteLine("Rudy Trace, AutoPalProcessAsync: click Login Link Successed!");
+            Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: click Login Link Successed!");
 
             bool bRet = await WaitForPageAsync(Globals.LOGIN_PAGE_TITLE, 30).ConfigureAwait(false);
             if (!bRet)
@@ -569,21 +586,21 @@ namespace DangDangAutoPal.Models
             bRet = await LoginAsync(Account, Password, PageTitle).ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("Rudy Trace, AutoPalProcessAsync: Log in Failed!");
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Log in Failed!");
                 return false;
             }
 
             bRet = await PalProductAsync(ProductLink, Account, Password).ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("Rudy Trace, AutoPalProcessAsync: Pal Product Failed!");
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Pal Product Failed!");
                 return false;
             }
 
             bRet = await SelectPayPlatformAsync(Globals.RADIO_TENPAY_XPATH).ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("Rudy Trace, AutoPalProcessAsync: Select Pay Platform Failed!");
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Select Pay Platform Failed!");
                 return false;
             }
 
@@ -592,7 +609,7 @@ namespace DangDangAutoPal.Models
             bRet = await TenpayAsync(TenpayUserName, TenpayPWD).ConfigureAwait(false);
             if (!bRet)
             {
-                Trace.TraceInformation("AutoPalProcessAsync: TenPay Failed!");
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: TenPay Failed!");
                 return false;
             }
 
@@ -607,7 +624,7 @@ namespace DangDangAutoPal.Models
                 AutomationElement rootElement = AutomationElement.RootElement.FindFirst(TreeScope.Children, propCondition);
                 if (rootElement == null)
                 {
-                    Trace.TraceInformation("Rudy Trace, rootElement is null.");
+                    Trace.TraceInformation("Rudy Trace =>rootElement is null.");
                     return null;
                 }
 
@@ -615,7 +632,7 @@ namespace DangDangAutoPal.Models
                 AutomationElement wrapperElement = rootElement.FindFirst(TreeScope.Children, propCondition);
                 if (wrapperElement == null)
                 {
-                    Trace.TraceInformation("Rudy Trace, wrapperElement is null.");
+                    Trace.TraceInformation("Rudy Trace =>wrapperElement is null.");
                     return null;
                 }
                 
@@ -624,14 +641,14 @@ namespace DangDangAutoPal.Models
                 AutomationElement childElement = wrapperElement.FindFirst(TreeScope.Descendants, propCondition);
                 if(childElement == null)
                 {
-                    Trace.TraceInformation("Rudy Trace, childElement is null.");
+                    Trace.TraceInformation("Rudy Trace =>childElement is null.");
                     return null;
                 }
                 return childElement;
             }
             catch(Exception e)
             {
-                Trace.TraceInformation("Rudy Exception, FindChildElementByClass: " + e.Source + ";" + e.Message);
+                Trace.TraceInformation("Rudy Exception =>FindChildElementByClass: " + e.Source + ";" + e.Message);
                 return null;
             }
             
@@ -653,20 +670,33 @@ namespace DangDangAutoPal.Models
  
         protected virtual void Dispose(bool disposing)
         {
+            Debug.WriteLine("Rudy Debug =>Dispose Here11");
             if (!m_disposed)
             {
+                Debug.WriteLine("Rudy Debug =>Dispose Here22");
                 if (disposing)
                 {
+                    //release managed resources.
+                }
+
+                if (driver != null)
+                {
+                    Debug.WriteLine("Rudy Debug =>Dispose driver");
                     driver.Quit();
+                }
+
+                if (cts != null)
+                {
+                    Debug.WriteLine("Rudy Debug =>Dispose cts");
                     cts.Dispose();
                 }
-  
                 m_disposed = true;
             }
         }
   
         ~AutoPal()
         {
+            Debug.WriteLine("Rudy Debug =>Destructed!");
             Dispose(false);
         }
   

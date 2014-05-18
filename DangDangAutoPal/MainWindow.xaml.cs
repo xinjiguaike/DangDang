@@ -24,6 +24,7 @@ using System.Diagnostics;
 using DangDangAutoPal.Models;
 using Microsoft.Win32;
 using DangDangAutoPal.Properties;
+using logger;
 
 
 namespace DangDangAutoPal
@@ -34,20 +35,25 @@ namespace DangDangAutoPal
     public partial class MainWindow : Window 
     {
         private AutoPal DangDangPal;
+        private log DDLog;
+        private string LogPath;
+
         public MainWindow()
         {
             InitializeComponent();
             DangDangPal = new AutoPal();
             this.DataContext = DangDangPal;
             pwdBoxADSL.Password = Settings.Default.ADSLPasswordSettings;
+            LogPath = System.Environment.CurrentDirectory + "\\DDEvent.log";
+            DDLog = new log();
         }
         
-        private async void MainWindow_Closed(object sender, EventArgs e)
+        private void OnMainWindow_Closed(object sender, EventArgs e)
         {
             Settings.Default.ADSLPasswordSettings = pwdBoxADSL.Password;
-            Settings.Default.Save(); 
-            await CleanUpAsync();
-            Trace.TraceInformation("Rudy Trace, Application Exited.");
+            Settings.Default.Save();
+            CleanUp();
+            Trace.TraceInformation("Rudy Trace =>Application Exited.");
         }
 
         
@@ -81,7 +87,8 @@ namespace DangDangAutoPal
 
         private void OnStopPalling(object sender, RoutedEventArgs e)
         {
-            Trace.TraceInformation("Rudy Trace, OnStopPalling: Pal Stopped.");
+            Trace.TraceInformation("Rudy Trace =>OnStopPalling: Begin stop palling...");
+            DangDangPal.CancelWaitting();
             gdBeginPal.Visibility = Visibility.Visible;
             gdPalling.Visibility = Visibility.Hidden;
         }
@@ -105,12 +112,12 @@ namespace DangDangAutoPal
             if (bRet)
                 await DangDangPal.BindAllAccountAddressAsync();
             else
-                Trace.TraceInformation("Rudy Trace, OnBeginBind: Set Web Driver Failed.");
+                Trace.TraceInformation("Rudy Trace =>OnBeginBind: Set web driver failed.");
         }
 
         private async void OnBeginPal(object sender, RoutedEventArgs e)
         {
-            Trace.WriteLine("Rudy Trace, OnBeginPal: Begin Pal! ");
+            Trace.WriteLine("==============Rudy Trace =>OnBeginPal: Begin Pal!=============== ");
             gdBeginPal.Visibility = Visibility.Hidden;
             gdPalling.Visibility = Visibility.Visible;
 
@@ -118,15 +125,24 @@ namespace DangDangAutoPal
 
             string ProductLink = "http://product.dangdang.com/1263628906.html";
             bool bRet = DangDangPal.SetWebDriver("Chrome");
-            if (bRet)
-                await DangDangPal.AutoPalProcessAsync("672045573", "mbi@88820", ProductLink);
-            else
-                Trace.WriteLine("Rudy Trace, OnBeginPal: Set Web Driver Failed.");
+            try
+            {
+                if(bRet)
+                    await DangDangPal.AutoPalProcessAsync("672045573", "mbi@88820", ProductLink);
+                else
+                    Trace.WriteLine("Rudy Trace =>OnBeginPal: Set Web Driver Failed.");
+            }
+            catch (OperationCanceledException)
+            {
+                Trace.TraceInformation("Rudy Trace =>OnBeginPal: Pal Stopped.");
+            }
+
+            btnStop.Content = "返回";
         }
 
         private Task PrepareEnvironmentAsync(string BrowserType)
         {
-            Trace.WriteLine("Rudy Trace, PrepareEnvironmentAsync: Begin Prepare Environment！");
+            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Begin prepare environment！");
             return Task.Run(() =>
             {
                 if (BrowserType.Equals("Chrome"))
@@ -145,35 +161,11 @@ namespace DangDangAutoPal
             });
         }
 
-        private async Task CleanUpAsync()
+        private void CleanUp()
         {
-            Trace.WriteLine("Rudy Trace, Cleaning up the Environment...");
-            if (DangDangPal != null)
-                DangDangPal.CleanUpAsync();
-            Trace.WriteLine("Rudy Trace, Clea up done.");
-        }
-
-        private async void OnTest_Click(object sender, RoutedEventArgs e)
-        {
-            await PrepareEnvironmentAsync("Chrome");
-            bool bRet = DangDangPal.SetWebDriver("Chrome");
-            try
-            {
-                if (bRet)
-                    await DangDangPal.WaitForPageAsync("Rudy Test", 15);
-                else
-                    Trace.WriteLine("Rudy Trace, OnTest_Click: Set Web Driver Failed.");
-            }
-            catch (OperationCanceledException)
-            {
-                Trace.TraceInformation("Rudy Trace, The waiting was cancelled.");
-            }
-        }
-
-        private void OnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            Trace.TraceInformation("Rudy Trace, OnCancel_Click: Begin Cancel.");
-            DangDangPal.CancelWaitting();
+            Trace.WriteLine("Rudy Trace =>Cleaning up the environment...");
+            DangDangPal.Dispose();
+            Trace.WriteLine("Rudy Trace =>Clea up done.");
         }
     }
 }
