@@ -9,7 +9,7 @@ namespace DangDangAutoPal.Models
     public class Globals
     {
         public const string CHROME_DRIVER_TITLE = "C:\\Windows\\system32\\chromedriver.exe";
-        public const string IE_DRIVER_TITLE = "C:\\Windows\\system32\\internetexplorerdriver.exe";
+        public const string IE_DRIVER_TITLE = "C:\\Windows\\system32\\IEDriverServer.exe";
 
         #region======================Page Title======================
         public const string LOGGEDIN_TITLE = "当当网—网上购物中心";

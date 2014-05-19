@@ -115,9 +115,9 @@ namespace DangDangAutoPal
 
         private async void OnBeginBind(object sender, RoutedEventArgs e)
         {
-            await PrepareEnvironmentAsync("Chrome");
+            await PrepareEnvironmentAsync(DangDangPal.BrowserIndex);
 
-            bool bRet = DangDangPal.SetWebDriver("Chrome");
+            bool bRet = DangDangPal.SetWebDriver(DangDangPal.BrowserIndex);
             if (bRet)
                 await DangDangPal.BindAllAccountAddressAsync();
             else
@@ -126,18 +126,18 @@ namespace DangDangAutoPal
 
         private async void OnBeginPal(object sender, RoutedEventArgs e)
         {
-            Trace.WriteLine("==============Rudy Trace =>OnBeginPal: Pal Start=============== ");
+            Trace.WriteLine(">>>>>>>>>>>>>>>>>>>>Rudy Trace =>OnBeginPal: Pal Start<<<<<<<<<<<<<<<<<<<<");
             gdBeginPal.Visibility = Visibility.Hidden;
             gdPalling.Visibility = Visibility.Visible;
 
-            await PrepareEnvironmentAsync("Chrome");
+            await PrepareEnvironmentAsync(DangDangPal.BrowserIndex);
 
             string ProductLink = "http://product.dangdang.com/1263628906.html";
-            bool bRet = DangDangPal.SetWebDriver("Chrome");
+            bool bRet = DangDangPal.SetWebDriver(DangDangPal.BrowserIndex);
             try
             {
                 if(bRet)
-                    await DangDangPal.AutoPalProcessAsync("672045573", "mbi@88820", ProductLink);
+                    await DangDangPal.AutoPalProcessAsync("2508961540", "abc123456", ProductLink);
                 else
                     Trace.WriteLine("Rudy Trace =>OnBeginPal: Set Web Driver Failed.");
             }
@@ -150,12 +150,12 @@ namespace DangDangAutoPal
             btnStop.Content = "返回";
         }
 
-        private Task PrepareEnvironmentAsync(string BrowserType)
+        private Task PrepareEnvironmentAsync(int BrowserIndex)
         {
             Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Begin prepare environment！");
             return Task.Run(() =>
             {
-                if (BrowserType.Equals("Chrome"))
+                if (BrowserIndex == 0)
                 {
                     Process[] pBrowsers = Process.GetProcessesByName("chrome");
                     foreach (Process pBrowser in pBrowsers)
@@ -167,6 +167,31 @@ namespace DangDangAutoPal
                     {
                         pDriver.Kill();
                     }
+                }
+                else if (BrowserIndex == 1)
+                {
+                    Process[] pBrowsers = Process.GetProcessesByName("iexplore");
+                    foreach (Process pBrowser in pBrowsers)
+                    {
+                        pBrowser.Kill();
+                    }
+                    Process[] pDrivers = Process.GetProcessesByName("IEDriverServer");
+                    foreach (Process pDriver in pDrivers)
+                    {
+                        pDriver.Kill();
+                    }
+                }
+                else if (BrowserIndex == 2)
+                {
+                    Process[] pBrowsers = Process.GetProcessesByName("firefox");
+                    foreach (Process pBrowser in pBrowsers)
+                    {
+                        pBrowser.Kill();
+                    }
+                }
+                else
+                {
+                    Trace.TraceInformation("Rudy Trace =>Invalid Browser Type.");
                 }
             });
         }
@@ -187,6 +212,11 @@ namespace DangDangAutoPal
         private void OnAdd_Click(object sender, RoutedEventArgs e)
         {
             DangDangPal.SinglePalCount += 1;
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

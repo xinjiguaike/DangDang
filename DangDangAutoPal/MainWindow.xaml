@@ -24,16 +24,22 @@
                         <TextBox Height="23" Text="{Binding PseudoProductLink}" Margin="109,180,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
                         <TextBlock HorizontalAlignment="Left" Margin="34,15,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="206" Grid.ColumnSpan="2"><Run Text="QQ"/><Run Language="zh-cn" Text="账户密码列表文件："/></TextBlock>
                         <TextBlock HorizontalAlignment="Left" Margin="34,76,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="206" Grid.ColumnSpan="2"><Run Language="zh-cn" Text="财付通账户密码列表文件："/></TextBlock>
-                        <Label Content="单个账户拍货数量：" HorizontalAlignment="Left" Margin="34,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="113" Height="25"/>
+                        <Label Content="拍货数量：" HorizontalAlignment="Left" Margin="34,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25"/>
                         <Label Content="宽带账户：" HorizontalAlignment="Left" Margin="34,320,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25"/>
                         <TextBox HorizontalAlignment="Left" Text="{Binding Source={x:Static p:Settings.Default}, Path=ADSLAccountSettings, Mode=TwoWay}" Height="23" Margin="104,322,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="99" Grid.ColumnSpan="2"/>
                         <Label Content="宽带密码：" HorizontalAlignment="Left" Margin="61,320,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25" Grid.Column="1"/>
                         <PasswordBox Name="pwdBoxADSL" HorizontalAlignment="Left"  PasswordChanged="OnPWDChanged" Margin="131,322,0,0" VerticalAlignment="Top" Width="80" Height="23" Grid.Column="1"/>
                         <Label Content="备注：" HorizontalAlignment="Left" Margin="34,273,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="45" Height="25"/>
                         <TextBox Height="23" Text="{Binding Remark}" Margin="79,275,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-                        <TextBox Height="23" HorizontalContentAlignment="Center" Text="{Binding SinglePalCount}" Margin="49,231,258,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="1"/>
-                        <Button Content="-" VerticalContentAlignment="Center" Click="OnReduce_Click" HorizontalAlignment="Left" Margin="19,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
-                        <Button Content="+" VerticalContentAlignment="Center" Click="OnAdd_Click" HorizontalAlignment="Left" Margin="80,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
+                        <TextBox Height="23" HorizontalContentAlignment="Center" Text="{Binding SinglePalCount}" Margin="139,231,315,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+                        <Button Content="-" VerticalContentAlignment="Center" Click="OnReduce_Click" HorizontalAlignment="Left" Margin="109,231,0,0" VerticalAlignment="Top" Width="25" Height="23" FontSize="16"/>
+                        <Button Content="+" VerticalContentAlignment="Center" Click="OnAdd_Click" HorizontalAlignment="Left" Margin="23,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
+                        <Label Content="浏览器：" HorizontalAlignment="Left" Margin="75,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="56" Height="25" Grid.Column="1"/>
+                        <ComboBox x:Name="cmbBrowser" Grid.Column="1" SelectedIndex="{Binding BrowserIndex}" HorizontalAlignment="Left" Margin="131,231,0,0" VerticalAlignment="Top" Width="80" SelectionChanged="ComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Chrome"/>
+                            <ComboBoxItem Content="IE"/>
+                            <ComboBoxItem Content="FireFox"/>
+                        </ComboBox>
                     </Grid>
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>

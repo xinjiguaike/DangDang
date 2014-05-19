@@ -101,24 +101,37 @@ namespace DangDangAutoPal.Models
                 _singlePalCount = value;
                 OnPropertyChanged("SinglePalCount");
             }
-
         }
 
+        private int _browserIndex;
+        public int BrowserIndex
+        {
+            get
+            {
+                return _browserIndex;
+            }
+            set
+            {
+                _browserIndex = value;
+                OnPropertyChanged("BrowserIndex");
+            }        
+        }
 
         public string ProductLink { get; set; }
         public string PseudoProductLink { get; set; }
         public string Remark { get; set; }
         public string ADSLAccount { get; set; }
         public string ADSLPassword { get; set; }
-        
         public int TimeOut { get; set; }
         
         public int SuccessPalCount { get; set; }
+
 
         //Functions
         public AutoPal()
         {
             m_disposed = false;
+            BrowserIndex = 0;
             QQAccountFile = "";
             TenpayAccountFile = "";
             BindQQAccountFile = "";
@@ -133,9 +146,9 @@ namespace DangDangAutoPal.Models
                 cts.Cancel();
         }
 
-        public bool SetWebDriver(string BrowserType)
+        public bool SetWebDriver(int BrowserIndex)
         {
-            if (BrowserType.Equals("Chrome"))
+            if (BrowserIndex == 0)
             {
                 string ProfilePath = Environment.GetEnvironmentVariable("LocalAppData") + "\\Google\\Chrome\\User Data";
                 var Options = new ChromeOptions();
@@ -146,18 +159,18 @@ namespace DangDangAutoPal.Models
                 driver = new ChromeDriver(Options);
                 App.WindowHide(Globals.CHROME_DRIVER_TITLE);
             }
-            else if (BrowserType.Equals("FireFox"))
+            else if (BrowserIndex == 1)
+            {
+                driver = new InternetExplorerDriver();
+                App.WindowHide(Globals.IE_DRIVER_TITLE);
+            }
+            else if (BrowserIndex == 2)
             {
                 string firefox_path = @"C:\Program Files\Mozilla Firefox\firefox.exe";
                 FirefoxBinary binary = new FirefoxBinary(firefox_path);
                 FirefoxProfile profile = new FirefoxProfile();
                 profile.SetPreference("network.proxy.type", 0);
                 driver = new FirefoxDriver(binary, profile, TimeSpan.FromSeconds(120));
-            }
-            else if (BrowserType.Equals("IE"))
-            {
-                driver = new InternetExplorerDriver();
-                App.WindowHide(Globals.IE_DRIVER_TITLE);
             }
             else
             {
@@ -198,7 +211,7 @@ namespace DangDangAutoPal.Models
                             return null;
                         }
                     }
-                    catch(Exception e)
+                    catch(Exception)
                     {
                         cts.Token.ThrowIfCancellationRequested();
                     }     
@@ -531,7 +544,6 @@ namespace DangDangAutoPal.Models
                 var btnLogin = await WaitForElementAsync(Globals.TENPAY_LOGIN_ID, "Id").ConfigureAwait(false);
                 btnLogin.Click();
 
-                //driver.Manage().Timeouts().SetPageLoadTimeout(TimeSpan.FromSeconds(60));
                 var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
                 if (!radioBalance.Selected && radioBalance.Displayed)
                     radioBalance.Click();
@@ -543,8 +555,8 @@ namespace DangDangAutoPal.Models
 
                 System.Drawing.Point ctrlPassPosition = ctrlPassword.Location;
                 OpenQA.Selenium.Interactions.Actions ctrlAction = new OpenQA.Selenium.Interactions.Actions(driver);
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = " + ctrlPassPosition.X.ToString());
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = " + ctrlPassPosition.Y.ToString());
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", ctrlPassPosition.X);
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", ctrlPassPosition.Y);
                 //ctrlAction.MoveToElement(ctrlPassword, 10, 30);
                 //ctrlAction.Click();
                 await Task.Delay(10000).ConfigureAwait(false);
