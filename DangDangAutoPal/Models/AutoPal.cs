@@ -682,7 +682,7 @@ namespace DangDangAutoPal.Models
                 if (driver != null)
                 {
                     Debug.WriteLine("Rudy Debug =>Dispose driver");
-                    driver.Quit();
+                    driver.Close();
                 }
 
                 if (cts != null)
