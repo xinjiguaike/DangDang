@@ -87,10 +87,19 @@ namespace DangDangAutoPal
 
         private void OnStopPalling(object sender, RoutedEventArgs e)
         {
-            Trace.TraceInformation("Rudy Trace =>OnStopPalling: Begin stop palling...");
-            DangDangPal.CancelWaitting();
-            gdBeginPal.Visibility = Visibility.Visible;
-            gdPalling.Visibility = Visibility.Hidden;
+            if (btnStop.Content.Equals("停止拍货"))
+            {
+                Trace.TraceInformation("Rudy Trace =>OnStopPalling: Stoppig pal...");
+                DangDangPal.CancelWaitting();
+                btnStop.Content = "正在取消...";
+                btnStop.IsEnabled = false;
+            }
+            else if (btnStop.Content.Equals("返回"))
+            {
+                gdBeginPal.Visibility = Visibility.Visible;
+                gdPalling.Visibility = Visibility.Hidden;
+            }
+            
         }
 
         private void OnBrowserBindQQAccount(object sender, RoutedEventArgs e)
@@ -117,7 +126,7 @@ namespace DangDangAutoPal
 
         private async void OnBeginPal(object sender, RoutedEventArgs e)
         {
-            Trace.WriteLine("==============Rudy Trace =>OnBeginPal: Begin Pal!=============== ");
+            Trace.WriteLine("==============Rudy Trace =>OnBeginPal: Pal Start=============== ");
             gdBeginPal.Visibility = Visibility.Hidden;
             gdPalling.Visibility = Visibility.Visible;
 
@@ -135,6 +144,7 @@ namespace DangDangAutoPal
             catch (OperationCanceledException)
             {
                 Trace.TraceInformation("Rudy Trace =>OnBeginPal: Pal Stopped.");
+                btnStop.IsEnabled = true;
             }
 
             btnStop.Content = "返回";
@@ -166,6 +176,17 @@ namespace DangDangAutoPal
             Trace.WriteLine("Rudy Trace =>Cleaning up the environment...");
             DangDangPal.Dispose();
             Trace.WriteLine("Rudy Trace =>Clea up done.");
+        }
+
+        private void OnReduce_Click(object sender, RoutedEventArgs e)
+        {
+            if (DangDangPal.SinglePalCount > 1)
+                DangDangPal.SinglePalCount -= 1;
+        }
+
+        private void OnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            DangDangPal.SinglePalCount += 1;
         }
     }
 }

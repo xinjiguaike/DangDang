@@ -31,6 +31,9 @@
                         <PasswordBox Name="pwdBoxADSL" HorizontalAlignment="Left"  PasswordChanged="OnPWDChanged" Margin="131,322,0,0" VerticalAlignment="Top" Width="80" Height="23" Grid.Column="1"/>
                         <Label Content="备注：" HorizontalAlignment="Left" Margin="34,273,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="45" Height="25"/>
                         <TextBox Height="23" Text="{Binding Remark}" Margin="79,275,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+                        <TextBox Height="23" HorizontalContentAlignment="Center" Text="{Binding SinglePalCount}" Margin="49,231,258,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Button Content="-" VerticalContentAlignment="Center" Click="OnReduce_Click" HorizontalAlignment="Left" Margin="19,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
+                        <Button Content="+" VerticalContentAlignment="Center" Click="OnAdd_Click" HorizontalAlignment="Left" Margin="80,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
                     </Grid>
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>

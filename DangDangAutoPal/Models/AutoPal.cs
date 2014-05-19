@@ -89,12 +89,28 @@ namespace DangDangAutoPal.Models
         
         }
 
+        private int _singlePalCount;
+        public int SinglePalCount
+        {
+            get
+            {
+                return _singlePalCount;
+            }
+            set
+            {
+                _singlePalCount = value;
+                OnPropertyChanged("SinglePalCount");
+            }
+
+        }
+
+
         public string ProductLink { get; set; }
         public string PseudoProductLink { get; set; }
         public string Remark { get; set; }
         public string ADSLAccount { get; set; }
         public string ADSLPassword { get; set; }
-        public int SinglePalCount { get; set; }
+        
         public int TimeOut { get; set; }
         
         public int SuccessPalCount { get; set; }
@@ -106,6 +122,7 @@ namespace DangDangAutoPal.Models
             QQAccountFile = "";
             TenpayAccountFile = "";
             BindQQAccountFile = "";
+            SinglePalCount = 1;
             aAccountInfo = new List<AccountInfo>();
             cts = new CancellationTokenSource();
         }
@@ -441,7 +458,7 @@ namespace DangDangAutoPal.Models
 
                 var inputBuyNum = await WaitForElementAsync(Globals.BUY_NUM_ID, "Id").ConfigureAwait(false);
                 inputBuyNum.Clear();
-                inputBuyNum.SendKeys("2");
+                inputBuyNum.SendKeys(SinglePalCount.ToString());
 
                 await Task.Delay(1000).ConfigureAwait(false);//Wait for 'one key buy' button load complete.
 
@@ -682,7 +699,7 @@ namespace DangDangAutoPal.Models
                 if (driver != null)
                 {
                     Debug.WriteLine("Rudy Debug =>Dispose driver");
-                    driver.Close();
+                    driver.Quit();
                 }
 
                 if (cts != null)
