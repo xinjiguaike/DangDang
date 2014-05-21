@@ -18,6 +18,7 @@ using System.ComponentModel;
 using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Forms = System.Windows.Forms;
 
 
 namespace DangDangAutoPal.Models
@@ -148,6 +149,7 @@ namespace DangDangAutoPal.Models
 
         public bool SetWebDriver(int BrowserIndex)
         {
+            Trace.WriteLine("Rudy Trace =>SetWebDriver: Set webdriver");
             if (BrowserIndex == 0)
             {
                 string ProfilePath = Environment.GetEnvironmentVariable("LocalAppData") + "\\Google\\Chrome\\User Data";
@@ -209,6 +211,10 @@ namespace DangDangAutoPal.Models
                         {
                             Trace.TraceInformation("Rudy Trace =>Element flag is invalid.");
                             return null;
+                        }
+                        if (!ele.Displayed)
+                        {
+                            ele = null;
                         }
                     }
                     catch(Exception)
@@ -320,8 +326,10 @@ namespace DangDangAutoPal.Models
             {
                 //driver.Navigate().GoToUrl(Globals.LOGIN_URL);
                 var linkQQLogin = await WaitForElementAsync(Globals.QQ_LOGIN_XPATH, "XPath").ConfigureAwait(false);
+                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin link.");
                 linkQQLogin.Click();
-                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Link Successed!");
+
+                Trace.WriteLine("Rudy Trace =>LoginAsync: Waitting for QQ login page load...");
 
                 driver.SwitchTo().Window(driver.WindowHandles.Last());
                 driver.SwitchTo().Frame(Globals.QQ_FRAME_NAME);
@@ -337,9 +345,11 @@ namespace DangDangAutoPal.Models
                 var inputQQPassword = await WaitForElementAsync(Globals.QQ_PASSWORD_ID, "Id").ConfigureAwait(false);
                 inputQQPassword.SendKeys(Password);
 
+                await Task.Delay(3000).ConfigureAwait(false);
+
                 var btnQQLogin = await WaitForElementAsync(Globals.QQ_LOGINBTN_ID, "Id").ConfigureAwait(false);
+                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Button");
                 btnQQLogin.Click();
-                Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Button Successed!");
             }
             catch (Exception e)
             {
@@ -544,33 +554,49 @@ namespace DangDangAutoPal.Models
                 var btnLogin = await WaitForElementAsync(Globals.TENPAY_LOGIN_ID, "Id").ConfigureAwait(false);
                 btnLogin.Click();
 
+                Trace.WriteLine("Rudy Trace =>LoginAsync: Waitting for Ten payment page to reload...");
+
+                //var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
+                //if (radioBalance != null)
+                driver.SwitchTo().Window(driver.WindowHandles.Last());//Switch to the reload page
+                //else
+                //    return false;
+
                 var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
-                if (!radioBalance.Selected && radioBalance.Displayed)
+                if (!radioBalance.Selected)
                     radioBalance.Click();
-
-                var ctrlPassword = await WaitForElementAsync(Globals.CTRL_TENPWD_LABEL_XPATH, "XPath").ConfigureAwait(false);
-
-                /*var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_ID, "Id");
-                btnConfirmToPay.Click();*/
-
-                System.Drawing.Point ctrlPassPosition = ctrlPassword.Location;
-                OpenQA.Selenium.Interactions.Actions ctrlAction = new OpenQA.Selenium.Interactions.Actions(driver);
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", ctrlPassPosition.X);
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", ctrlPassPosition.Y);
-                //ctrlAction.MoveToElement(ctrlPassword, 10, 30);
-                //ctrlAction.Click();
-                await Task.Delay(10000).ConfigureAwait(false);
-
-                ctrlAction.SendKeys("12345");
-                //System.Windows.MessageBox.Show("TenPay Succeed!", "Rudy");
-                 
-                 /*
+                  
                 AutomationElement ctrlPassword = FindChildElementByClass("Edit", "Chrome_WidgetWin_1");
                 if (ctrlPassword == null)
                 {
                     Trace.TraceInformation("Rudy Trace =>ctrlPassword is null.");
                     return false;
                 }
+                System.Windows.Point ctrlPassPosition = ctrlPassword.GetClickablePoint();
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", ctrlPassPosition.X);
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", ctrlPassPosition.Y);
+
+                await Task.Delay(5000).ConfigureAwait(false);
+                ctrlPassword.SetFocus();
+                Trace.TraceInformation("Rudy Trace =>Foucs Set!");
+
+                await Task.Delay(3000).ConfigureAwait(false);
+                Forms.SendKeys.SendWait("P");
+                Trace.TraceInformation("Rudy Trace =>Send 'P'");
+
+                await Task.Delay(1000).ConfigureAwait(false);
+                Forms.SendKeys.SendWait("A");
+                Trace.TraceInformation("Rudy Trace =>Send 'A'");
+
+                await Task.Delay(1000).ConfigureAwait(false);
+                Forms.SendKeys.SendWait("S");
+                Trace.TraceInformation("Rudy Trace =>Send 'S'");
+
+                await Task.Delay(1000).ConfigureAwait(false);
+                Forms.SendKeys.SendWait("S");
+                Trace.TraceInformation("Rudy Trace =>Send 'S'");
+
+                /*
                 var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
                 if (patternValue != null)
                     patternValue.SetValue(TenpayPass);
@@ -579,6 +605,9 @@ namespace DangDangAutoPal.Models
                     Trace.TraceInformation("Rudy Trace =>patternValue is null.");
                     return false;
                 }*/
+
+                //var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_XPATH, "XPath");
+                //btnConfirmToPay.Click();
 
                 Trace.TraceInformation("Rudy Trace =>Tenpay Succeed.");
             }
@@ -597,16 +626,18 @@ namespace DangDangAutoPal.Models
 
         public async Task<bool> AutoPalProcessAsync(string Account, string Password, string ProductLink)
         {
+            Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Go to link[{0}]", ProductLink);
             await Task.Run(() =>
-            { 
+            {
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Waitting for page load...");
                 driver.Navigate().GoToUrl(ProductLink);
-            }).ConfigureAwait(false); 
+            }).ConfigureAwait(false);
 
             string PageTitle = driver.Title;
 
             var linkLogin = await WaitForElementAsync(Globals.LOGIN_LINK_CLASS, "Class").ConfigureAwait(false);
+            Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: click Login Link.");
             linkLogin.Click();
-            Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: click Login Link Successed!");
 
             bool bRet = await WaitForPageAsync(Globals.LOGIN_PAGE_TITLE, 30).ConfigureAwait(false);
             if (!bRet)
