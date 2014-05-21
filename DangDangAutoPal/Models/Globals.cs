@@ -80,7 +80,7 @@ namespace DangDangAutoPal.Models
         //Tenpay Payment Page
         public const string RADIO_BALANCEPAY_CLASS = "ctrl-radio";
         public const string CTRL_TENPWD_LABEL_XPATH = "//div[@id='paypwd_line']/label";
-        public const string CONFIRM_TO_PAY_XPATH = "//span[@id='btn_pay_submit']/button";
+        public const string CONFIRM_TO_PAY_ID = "btn_pay_submit";
         #endregion
     }
 }

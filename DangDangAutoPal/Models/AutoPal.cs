@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Internal;
 using OpenQA.Selenium.Support;
 using OpenQA.Selenium.Support.UI;
@@ -17,8 +18,7 @@ using System.ComponentModel;
 using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using Forms = System.Windows.Forms;
-using WebAction = OpenQA.Selenium.Interactions;
+
 
 namespace DangDangAutoPal.Models
 {
@@ -210,12 +210,6 @@ namespace DangDangAutoPal.Models
                             Trace.TraceInformation("Rudy Trace =>Element flag is invalid.");
                             return null;
                         }
-                        if (!ele.Displayed)
-                        {
-                            ele = null;
-                            cts.Token.ThrowIfCancellationRequested();
-                        }
-                            
                     }
                     catch(Exception)
                     {
@@ -269,59 +263,6 @@ namespace DangDangAutoPal.Models
                 return false;
             }, cts.Token);
             return bRet;
-        }
-
-
-        public void WaitForPageLoad(int maxWaitTimeInSeconds) 
-        {
-            string state = string.Empty;
-            try 
-            {
-                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(maxWaitTimeInSeconds));
-
-                //Checks every 500 ms whether predicate returns true if returns exit otherwise keep trying till it returns ture
-                wait.Until(d => 
-                {
-                    try 
-                    {
-                        state = ((IJavaScriptExecutor) driver).ExecuteScript(@"return document.readyState").ToString();
-                    } 
-                    catch (InvalidOperationException) 
-                    {
-                        //Ignore
-                    } 
-                    catch (NoSuchWindowException) 
-                    {
-                        //when popup is closed, switch to last windows
-                        driver.SwitchTo().Window(driver.WindowHandles.Last());
-                    }
-                    //In IE7 there are chances we may get state as loaded instead of complete
-                    return (state.Equals("complete", StringComparison.InvariantCultureIgnoreCase) || state.Equals("loaded", StringComparison.InvariantCultureIgnoreCase));
-
-                });
-            } 
-            catch (TimeoutException) 
-            {
-                //sometimes Page remains in Interactive mode and never becomes Complete, then we can still try to access the controls
-                if (!state.Equals("interactive", StringComparison.InvariantCultureIgnoreCase))
-                    throw;
-            } 
-            catch (NullReferenceException) 
-            {
-                //sometimes Page remains in Interactive mode and never becomes Complete, then we can still try to access the controls
-                if (!state.Equals("interactive", StringComparison.InvariantCultureIgnoreCase))
-                    throw;
-            } 
-            catch (WebDriverException) 
-            {
-                if (driver.WindowHandles.Count == 1) 
-                {
-                    driver.SwitchTo().Window(driver.WindowHandles[0]);
-                }
-                state = ((IJavaScriptExecutor) driver).ExecuteScript(@"return document.readyState").ToString();
-                if (!(state.Equals("complete", StringComparison.InvariantCultureIgnoreCase) || state.Equals("loaded", StringComparison.InvariantCultureIgnoreCase)))
-                    throw;
-            }
         }
 
         public async Task<bool> SetAddressAccoutInfoAsync(string FilePath)
@@ -397,7 +338,6 @@ namespace DangDangAutoPal.Models
                 inputQQPassword.SendKeys(Password);
 
                 var btnQQLogin = await WaitForElementAsync(Globals.QQ_LOGINBTN_ID, "Id").ConfigureAwait(false);
-                await Task.Delay(3000).ConfigureAwait(false);
                 btnQQLogin.Click();
                 Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Button Successed!");
             }
@@ -527,8 +467,6 @@ namespace DangDangAutoPal.Models
             {
                 //driver.Navigate().GoToUrl(ProductLink);
                 var cbxColor = await WaitForElementAsync(Globals.COLOR_IMAGE1_XPATH, "XPath").ConfigureAwait(false);
-                WebAction.Actions ctrlAction = new WebAction.Actions(driver);
-                ctrlAction.MoveToElement(cbxColor);
                 cbxColor.Click();
 
                 var inputBuyNum = await WaitForElementAsync(Globals.BUY_NUM_ID, "Id").ConfigureAwait(false);
@@ -603,98 +541,44 @@ namespace DangDangAutoPal.Models
                 inputTenpayUser.SendKeys(TenpayUser);
                 var inputTenpayPass = await WaitForElementAsync(Globals.TENPAY_PASSWORD_ID, "Id").ConfigureAwait(false);
                 inputTenpayPass.SendKeys(TenpayPass);
-
-                await Task.Delay(3000).ConfigureAwait(false);//Wait 3 seconds before submit
-
                 var btnLogin = await WaitForElementAsync(Globals.TENPAY_LOGIN_ID, "Id").ConfigureAwait(false);
                 btnLogin.Click();
 
-                //Page refresh after tenpay login.
                 var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
-                driver.SwitchTo().Window(driver.WindowHandles.Last());
-
-                radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
-                if (!radioBalance.Selected)
-                {
+                if (!radioBalance.Selected && radioBalance.Displayed)
                     radioBalance.Click();
-                    Trace.TraceInformation("Rudy Trace =>Click Balance radio button succeed.");
-                }
-                //var ctrlPassword = await WaitForElementAsync(Globals.CTRL_TENPWD_LABEL_XPATH, "XPath").ConfigureAwait(false);
 
-                var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_XPATH, "XPath");
-                
-                System.Drawing.Point btnSubmitPosition = btnConfirmToPay.Location;
-                
-                Trace.TraceInformation("Rudy Trace =>ClickPoint.X = {0}", btnSubmitPosition.X+30);
-                Trace.TraceInformation("Rudy Trace =>ClickPoint.Y = {0}", btnSubmitPosition.Y-70);
+                var ctrlPassword = await WaitForElementAsync(Globals.CTRL_TENPWD_LABEL_XPATH, "XPath").ConfigureAwait(false);
 
-                //App.ClickMouseLeft(btnSubmitPosition.X+30, btnSubmitPosition.Y-70);
-                //App.ClickMouseLeft(250, 570);
-                //WebAction.Actions ctrlAction = new WebAction.Actions(driver);
-                //ctrlAction.MoveToElement(btnConfirmToPay, 30, -70);
+                /*var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_ID, "Id");
+                btnConfirmToPay.Click();*/
+
+                System.Drawing.Point ctrlPassPosition = ctrlPassword.Location;
+                OpenQA.Selenium.Interactions.Actions ctrlAction = new OpenQA.Selenium.Interactions.Actions(driver);
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", ctrlPassPosition.X);
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", ctrlPassPosition.Y);
+                //ctrlAction.MoveToElement(ctrlPassword, 10, 30);
                 //ctrlAction.Click();
+                await Task.Delay(10000).ConfigureAwait(false);
 
-                //await Task.Delay(10000).ConfigureAwait(false);
-
-                //Trace.TraceInformation("Rudy Trace =>Begin Send Keys...");
-                //ctrlAction.SendKeys("12345");
+                ctrlAction.SendKeys("12345");
+                //System.Windows.MessageBox.Show("TenPay Succeed!", "Rudy");
                  
-                 
+                 /*
                 AutomationElement ctrlPassword = FindChildElementByClass("Edit", "Chrome_WidgetWin_1");
-                System.Windows.Point clickPoint = ctrlPassword.GetClickablePoint();
-                Trace.TraceInformation("Rudy Trace =>AutomationclickPoint.X = {0}", (int)clickPoint.X);
-                Trace.TraceInformation("Rudy Trace =>AutomationclickPoint.Y = {0}", (int)clickPoint.Y);
-
                 if (ctrlPassword == null)
                 {
                     Trace.TraceInformation("Rudy Trace =>ctrlPassword is null.");
                     return false;
                 }
-                ctrlPassword.SetFocus();
-
-                App.ClickMouseLeft((int)clickPoint.X, (int)clickPoint.Y);
-                await Task.Delay(5000).ConfigureAwait(false);
-                App.ClickMouseLeft((int)clickPoint.X, (int)clickPoint.Y);
-                /*var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
+                var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
                 if (patternValue != null)
-                {
-                    patternValue.SetValue("pass");
-                    
-                }
+                    patternValue.SetValue(TenpayPass);
                 else
                 {
                     Trace.TraceInformation("Rudy Trace =>patternValue is null.");
                     return false;
                 }*/
-                
-                
-                //Submit
-               /* Trace.TraceInformation("Rudy Trace =>Click Submit button.");
-                btnConfirmToPay.Click();
-
-                await Task.Delay(5000).ConfigureAwait(false);
-
-                Trace.TraceInformation("Rudy Trace =>SendKeys.");
-                Forms.SendKeys.SendWait("Pass");
-
-                await Task.Delay(5000).ConfigureAwait(false);
-
-                Trace.TraceInformation("Rudy Trace =>Click Submit button again.");
-                btnConfirmToPay.Click();*/
-
-                Trace.TraceInformation("Rudy Trace =>Sending Keys...");
-                await Task.Delay(5000).ConfigureAwait(false);
-                Trace.TraceInformation("Rudy Trace =>Send 'P'");
-                Forms.SendKeys.SendWait("P");
-                await Task.Delay(1000).ConfigureAwait(false);
-                Trace.TraceInformation("Rudy Trace =>Send 'a'");
-                Forms.SendKeys.SendWait("a");
-                await Task.Delay(1000).ConfigureAwait(false);
-                Trace.TraceInformation("Rudy Trace =>Send 's'");
-                Forms.SendKeys.SendWait("s");
-                await Task.Delay(1000).ConfigureAwait(false);
-                Trace.TraceInformation("Rudy Trace =>Send 's'");
-                Forms.SendKeys.SendWait("s");
 
                 Trace.TraceInformation("Rudy Trace =>Tenpay Succeed.");
             }
