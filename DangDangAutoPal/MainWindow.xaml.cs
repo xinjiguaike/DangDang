@@ -129,8 +129,11 @@ namespace DangDangAutoPal
             Trace.WriteLine(">>>>>>>>>>>>>>>>>>>>Rudy Trace =>OnBeginPal: Pal Start<<<<<<<<<<<<<<<<<<<<");
             gdBeginPal.Visibility = Visibility.Hidden;
             gdPalling.Visibility = Visibility.Visible;
+            btnStop.Content = "停止拍货";
 
+            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Prepare the environment...");
             await PrepareEnvironmentAsync(DangDangPal.BrowserIndex);
+            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Environment ready！");
 
             string ProductLink = "http://product.dangdang.com/1263628906.html";
             bool bRet = DangDangPal.SetWebDriver(DangDangPal.BrowserIndex);
@@ -152,7 +155,6 @@ namespace DangDangAutoPal
 
         private Task PrepareEnvironmentAsync(int BrowserIndex)
         {
-            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Begin prepare environment！");
             return Task.Run(() =>
             {
                 if (BrowserIndex == 0)
