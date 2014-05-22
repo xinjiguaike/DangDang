@@ -40,10 +40,13 @@ namespace DangDangAutoPal
             mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, x * 65535 / 1600, y * 65535 / 900, 0, 0);//移动到需要点击的位置
             mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE, x * 65535 / 1600, y * 65535 / 900, 0, 0);//点击
             mouse_event(MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE, x * 65535 / 1600, y * 65535 / 900, 0, 0);//抬
-
         }
 
-
+        public static void MouseMove(int x, int y)
+        {
+            //绝对位置
+            mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, x * 65535 / 1600, y * 65535 / 900, 0, 0);//移动到需要点击的位置  
+        }
         /// <summary>
         /// Hiding Window
         /// </summary>

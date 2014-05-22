@@ -35,11 +35,12 @@
                         <Button Content="-" VerticalContentAlignment="Center" Click="OnReduce_Click" HorizontalAlignment="Left" Margin="109,231,0,0" VerticalAlignment="Top" Width="25" Height="23" FontSize="16"/>
                         <Button Content="+" VerticalContentAlignment="Center" Click="OnAdd_Click" HorizontalAlignment="Left" Margin="23,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
                         <Label Content="浏览器：" HorizontalAlignment="Left" Margin="75,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="56" Height="25" Grid.Column="1"/>
-                        <ComboBox x:Name="cmbBrowser" Grid.Column="1" SelectedIndex="{Binding BrowserIndex}" HorizontalAlignment="Left" Margin="131,231,0,0" VerticalAlignment="Top" Width="80" SelectionChanged="ComboBox_SelectionChanged">
+                        <ComboBox x:Name="cmbBrowser" Grid.Column="1" SelectedIndex="{Binding BrowserIndex}" HorizontalAlignment="Left" Margin="131,231,0,0" VerticalAlignment="Top" Width="80">
                             <ComboBoxItem Content="Chrome"/>
                             <ComboBoxItem Content="IE"/>
                             <ComboBoxItem Content="FireFox"/>
                         </ComboBox>
+                        <Button Content="Test" Click="OnTest" HorizontalAlignment="Left" Margin="239,179,0,0" VerticalAlignment="Top" Width="51" Height="23" Grid.Column="1"/>
                     </Grid>
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>

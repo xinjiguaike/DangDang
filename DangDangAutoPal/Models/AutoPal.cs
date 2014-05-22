@@ -160,6 +160,8 @@ namespace DangDangAutoPal.Models
 
                 driver = new ChromeDriver(Options);
                 App.WindowHide(Globals.CHROME_DRIVER_TITLE);
+                //driver = new RemoteWebDriver(DesiredCapabilities.HtmlUnit());
+                //IWebDriver driver = new RemoteWebDriver(DesiredCapabilities.HtmlUnitWithJavaScript());
             }
             else if (BrowserIndex == 1)
             {
@@ -350,6 +352,7 @@ namespace DangDangAutoPal.Models
                 var btnQQLogin = await WaitForElementAsync(Globals.QQ_LOGINBTN_ID, "Id").ConfigureAwait(false);
                 Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin Button");
                 btnQQLogin.Click();
+
             }
             catch (Exception e)
             {
@@ -475,7 +478,7 @@ namespace DangDangAutoPal.Models
         {
             try
             {
-                //driver.Navigate().GoToUrl(ProductLink);
+                App.MouseMove(500, 0);
                 var cbxColor = await WaitForElementAsync(Globals.COLOR_IMAGE1_XPATH, "XPath").ConfigureAwait(false);
                 cbxColor.Click();
 
@@ -551,18 +554,21 @@ namespace DangDangAutoPal.Models
                 inputTenpayUser.SendKeys(TenpayUser);
                 var inputTenpayPass = await WaitForElementAsync(Globals.TENPAY_PASSWORD_ID, "Id").ConfigureAwait(false);
                 inputTenpayPass.SendKeys(TenpayPass);
+
+                await Task.Delay(3000).ConfigureAwait(false);
+
                 var btnLogin = await WaitForElementAsync(Globals.TENPAY_LOGIN_ID, "Id").ConfigureAwait(false);
                 btnLogin.Click();
 
                 Trace.WriteLine("Rudy Trace =>LoginAsync: Waitting for Ten payment page to reload...");
 
-                //var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
-                //if (radioBalance != null)
-                driver.SwitchTo().Window(driver.WindowHandles.Last());//Switch to the reload page
-                //else
-                //    return false;
-
                 var radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
+                if (radioBalance != null)
+                    driver.SwitchTo().Window(driver.WindowHandles.Last());//Switch to the reload page
+                else
+                    return false;
+
+                radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
                 if (!radioBalance.Selected)
                     radioBalance.Click();
                   
@@ -573,11 +579,21 @@ namespace DangDangAutoPal.Models
                     return false;
                 }
                 System.Windows.Point ctrlPassPosition = ctrlPassword.GetClickablePoint();
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", ctrlPassPosition.X);
-                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", ctrlPassPosition.Y);
+                int password_X = (int)ctrlPassPosition.X;
+                int password_Y = (int)ctrlPassPosition.Y;
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", password_X);
+                Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", password_Y);
+                
+                /*var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
+                if (patternValue != null)
+                    patternValue.SetValue("");
+                else
+                {
+                    Trace.TraceInformation("Rudy Trace =>patternValue is null.");
+                    return false;
+                }*/
 
-                await Task.Delay(5000).ConfigureAwait(false);
-                ctrlPassword.SetFocus();
+                App.ClickLeft(password_X, password_Y);
                 Trace.TraceInformation("Rudy Trace =>Foucs Set!");
 
                 await Task.Delay(3000).ConfigureAwait(false);
@@ -596,15 +612,7 @@ namespace DangDangAutoPal.Models
                 Forms.SendKeys.SendWait("S");
                 Trace.TraceInformation("Rudy Trace =>Send 'S'");
 
-                /*
-                var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
-                if (patternValue != null)
-                    patternValue.SetValue(TenpayPass);
-                else
-                {
-                    Trace.TraceInformation("Rudy Trace =>patternValue is null.");
-                    return false;
-                }*/
+                
 
                 //var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_XPATH, "XPath");
                 //btnConfirmToPay.Click();

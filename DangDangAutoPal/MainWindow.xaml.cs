@@ -216,9 +216,10 @@ namespace DangDangAutoPal
             DangDangPal.SinglePalCount += 1;
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnTest(object sender, RoutedEventArgs e)
         {
-
+            //WebClient webclient = new WebClient();
+            //webclient.getPage("www.dangdang.com");
         }
     }
 }
