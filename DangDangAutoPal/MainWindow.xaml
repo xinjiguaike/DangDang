@@ -31,7 +31,7 @@
                         <PasswordBox Name="pwdBoxADSL" HorizontalAlignment="Left"  PasswordChanged="OnPWDChanged" Margin="131,322,0,0" VerticalAlignment="Top" Width="80" Height="23" Grid.Column="1"/>
                         <Label Content="备注：" HorizontalAlignment="Left" Margin="34,273,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="45" Height="25"/>
                         <TextBox Height="23" Text="{Binding Remark}" Margin="79,275,122,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-                        <TextBox Height="23" HorizontalContentAlignment="Center" Text="{Binding SinglePalCount}" Margin="139,231,315,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+                        <TextBox x:Name="tbPalCount" Height="23" HorizontalContentAlignment="Center" TextChanged="OnPalCountChanged" Text="{Binding SinglePalCount}" Margin="139,231,315,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
                         <Button Content="-" VerticalContentAlignment="Center" Click="OnReduce_Click" HorizontalAlignment="Left" Margin="109,231,0,0" VerticalAlignment="Top" Width="25" Height="23" FontSize="16"/>
                         <Button Content="+" VerticalContentAlignment="Center" Click="OnAdd_Click" HorizontalAlignment="Left" Margin="23,231,0,0" VerticalAlignment="Top" Width="25" Height="23" Grid.Column="1" FontSize="16"/>
                         <Label Content="浏览器：" HorizontalAlignment="Left" Margin="75,229,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="56" Height="25" Grid.Column="1"/>
@@ -45,7 +45,7 @@
                     <Grid x:Name="gdPalling" Width="480" Height="450" Visibility="Hidden">
                         <ProgressBar HorizontalAlignment="Left" Height="16" Margin="75,64,0,0" VerticalAlignment="Top" Width="318"/>
                         <ScrollBar HorizontalAlignment="Left" Margin="328,144,0,0" VerticalAlignment="Top"/>
-                        <ListBox HorizontalAlignment="Left" Height="207" Margin="75,95,0,0" VerticalAlignment="Top" Width="318"/>
+                        <ListBox x:Name="lbInfoList" HorizontalAlignment="Left" Height="207" Margin="75,95,0,0" VerticalAlignment="Top" Width="318"/>
                         <Label Content="d dfdsfsdfdfd" HorizontalAlignment="Left" Margin="75,23,0,0" VerticalAlignment="Top" Width="318" Height="24"/>
                         <Button x:Name="btnStop" Content="停止拍货" Click="OnStopPalling" HorizontalAlignment="Left" Margin="193,389,0,0" VerticalAlignment="Top" Width="85" Height="29"/>
                     </Grid>
@@ -54,14 +54,14 @@
             </TabItem>
             <TabItem Header="添加评论">
                 <Grid>
-                    <Button Content="pinglun" HorizontalAlignment="Left" Margin="166,252,0,0" VerticalAlignment="Top" Width="75"/>
+                    <Button Content="Comment" HorizontalAlignment="Left" Margin="166,252,0,0" VerticalAlignment="Top" Width="75"/>
                 </Grid>
             </TabItem>
             <TabItem Header="绑定地址">
                 <Grid  x:Name="gdBindingAddress" Width="480" Height="450">
                     <TextBox Name="tbBindQQAccount" Text="{Binding BindQQAccountFile}" HorizontalAlignment="Left" Height="23" Margin="42,153,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="324"/>
                     <Button Content="..." Click="OnBrowserBindQQAccount" HorizontalAlignment="Left" Margin="382,153,0,0" VerticalAlignment="Top" Width="51" Height="23" RenderTransformOrigin="0.471,-2.087"/>
-                    <Button Content="开始绑定" Margin="197,250,198,0" VerticalAlignment="Top" Height="28" Click="OnBeginBind"/>
+                    <Button x:Name="btnBind" Content="开始绑定" Margin="197,250,198,0" VerticalAlignment="Top" Height="28" Click="OnBeginBind"/>
                     <Label Content="QQ账户密码与地址信息文件：" HorizontalAlignment="Left" Margin="42,125,0,0" VerticalAlignment="Top" Width="267"/>
                 </Grid>
             </TabItem>

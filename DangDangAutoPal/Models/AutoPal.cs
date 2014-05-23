@@ -19,6 +19,7 @@ using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Forms = System.Windows.Forms;
+using System.Reflection;
 
 
 namespace DangDangAutoPal.Models
@@ -36,16 +37,22 @@ namespace DangDangAutoPal.Models
         public string DetailAddress;
     }
 
+    public struct DDAccount
+    {
+        public string UserName;
+        public string Password;
+    }
 
     public class AutoPal: INotifyPropertyChanged, IDisposable
     {
         //Properties
         private IWebDriver driver;
         private List<AccountInfo> aAccountInfo;
+        private List<DDAccount> aDDAccount;
         private CancellationTokenSource cts;
-
-        private List<string> aTenAccount;
-        private List<string> aTenPassword;
+        
+        private string OrderMoney;
+        private string OrderNo;
 
         private string _qqAccountFile;
         public string QQAccountFile 
@@ -118,6 +125,9 @@ namespace DangDangAutoPal.Models
             }        
         }
 
+        public string TenpayAccount { get; set; }
+        public string TenpayPassword { get; set; }
+
         public string ProductLink { get; set; }
         public string PseudoProductLink { get; set; }
         public string Remark { get; set; }
@@ -136,8 +146,15 @@ namespace DangDangAutoPal.Models
             QQAccountFile = "";
             TenpayAccountFile = "";
             BindQQAccountFile = "";
+            TenpayAccount = "";
+            TenpayPassword = "";
             SinglePalCount = 1;
+            ProductLink = "http://product.dangdang.com/1263628906.html";
+            OrderMoney = "100";
+            OrderNo = "T123456789";
+            Remark = "111";
             aAccountInfo = new List<AccountInfo>();
+            aDDAccount = new List<DDAccount>();
             cts = new CancellationTokenSource();
         }
 
@@ -147,9 +164,9 @@ namespace DangDangAutoPal.Models
                 cts.Cancel();
         }
 
-        public bool SetWebDriver(int BrowserIndex)
+        public bool OpenBrowser(int BrowserIndex)
         {
-            Trace.WriteLine("Rudy Trace =>SetWebDriver: Set webdriver");
+            Trace.WriteLine("Rudy Trace =>OpenBrowser: Set webdriver");
             if (BrowserIndex == 0)
             {
                 string ProfilePath = Environment.GetEnvironmentVariable("LocalAppData") + "\\Google\\Chrome\\User Data";
@@ -189,7 +206,7 @@ namespace DangDangAutoPal.Models
             return true;
         }
 
-        public async Task<IWebElement>  WaitForElementAsync(string el_mark, string el_flag,  int timeout = 30)
+        public async Task<IWebElement>  WaitForElementAsync(string el_mark, string el_flag,  int timeout = 60)
         {
             IWebElement elementFound = await Task.Run(() =>
             {
@@ -236,7 +253,7 @@ namespace DangDangAutoPal.Models
         }
 
 
-        public async Task<bool> WaitForPageAsync(string PageTitle, int timeout = 30)
+        public async Task<bool> WaitForPageAsync(string PageTitle, int timeout = 120)
         {
             bool bRet = await Task.Run(() =>
             {
@@ -251,7 +268,10 @@ namespace DangDangAutoPal.Models
                         cts.Token.ThrowIfCancellationRequested();// Throw the Cancellation Request.
                         try
                         {
+
                             driver.SwitchTo().Window(strWindow);
+                            Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Switch to page [{0}]", driver.Title);
+
                             if (driver.Title.Contains(PageTitle))
                             {
                                 Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Page [{0}] Load Succeed!", PageTitle);
@@ -270,6 +290,178 @@ namespace DangDangAutoPal.Models
                 Trace.TraceInformation("Rudy Trace =>WaitForPageAsync: Page [{0}] Load Time Out!", PageTitle);
                 return false;
             }, cts.Token);
+            return bRet;
+        }
+
+
+        public async Task TestExcelOperationAsync()
+        {
+            string reportpath = System.Environment.CurrentDirectory + "//当当拍货报表_" + DateTime.Now.ToString();
+            int nCount = 1;
+            bool bSuccess = false;
+            
+            bool bRet = await SetDDAccoutInfoAsync(QQAccountFile).ConfigureAwait(false);
+            if (bRet)
+            {
+                bRet = await CreateDDPalReportAsync(reportpath).ConfigureAwait(false);
+                if (bRet)
+                {
+                    Trace.TraceInformation("Rudy Trace =>Set DangDang Account Info Success!");
+                    foreach (DDAccount account in aDDAccount)
+                    {
+                        bSuccess = !bSuccess;
+                        bRet = await UpdateDDPalReportAsync(reportpath, nCount, bRet).ConfigureAwait(false);
+                        if (!bRet)
+                            Trace.TraceInformation("Rudy Trace =>Update Report Failed[Line: {0}]!", nCount + 1);
+                        nCount++;
+                    }
+                }
+                else
+                {
+                    Trace.TraceInformation("Rudy Trace =>Create Report Failed!");
+                }
+
+            }
+            else
+            {
+                Trace.TraceInformation("Rudy Trace =>SetDDAccoutInfoAsync Failed!");
+            }      
+        }
+
+        public async Task<bool> CreateDDPalReportAsync(string FilePath)
+        {
+            bool bRet = await Task.Run(() =>
+            {
+                try
+                {
+                    Application excel = new Application();
+                    excel.Visible = false;
+                    Workbook wb = excel.Workbooks.Add();
+                    Worksheet ws = wb.Sheets[1] as Worksheet;
+
+                    ws.Cells[1, 1] = "账户";
+                    ws.Cells[1, 2] = "密码";
+                    ws.Cells[1, 3] = "订单编号";
+                    ws.Cells[1, 4] = "数量";
+                    ws.Cells[1, 5] = "金额(元)";
+                    ws.Cells[1, 6] = "备注";
+                    ws.Cells[1, 7] = "已评论";
+
+                    wb.SaveAs(FilePath);
+
+                    if (wb != null)
+                        wb.Close();
+                    if (excel != null)
+                    {
+                        excel.Quit();
+                        App.KillExcel(excel);
+                        excel = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    Trace.TraceInformation("Rudy Exception=> CreateDDPalReportAsync： " + e.Source + ";" + e.Message);
+                    return false;
+                }
+
+                return true;
+            }).ConfigureAwait(false);
+            return bRet;
+        }
+
+        public async Task<bool> UpdateDDPalReportAsync(string FilePath, int AccountNo, bool bSuccess)
+        {
+            bool bRet = await Task.Run(() =>
+            {
+                try
+                {
+                    Application excel = new Application();
+                    excel.Visible = false;
+                    Workbook wb = excel.Workbooks.Open(FilePath);
+                    Worksheet ws = wb.ActiveSheet as Worksheet;
+
+                    int nRow = AccountNo + 1;
+                    int nAccountIndex = AccountNo - 1;
+                    ws.Cells[nRow, 1] = aDDAccount[nAccountIndex].UserName;
+                    ws.Cells[nRow, 2] = aDDAccount[nAccountIndex].Password;
+                    if (bSuccess)
+                    {
+                        ws.Cells[nRow, 3] = OrderNo;
+                        ws.Cells[nRow, 4] = SinglePalCount;
+                        ws.Cells[nRow, 5] = OrderMoney;
+                        ws.Cells[nRow, 6] = Remark;
+                        ws.Cells[nRow, 7] = "否";
+                    }
+                    else
+                    {
+                        ((Range)(ws.Cells[nRow, 1])).Interior.ColorIndex = 3;
+                        ((Range)(ws.Cells[nRow, 2])).Interior.ColorIndex = 3;
+                    }
+                    
+                    wb.Save();
+
+                    if (wb != null)
+                        wb.Close();
+                    if (excel != null)
+                    {
+                        excel.Quit();
+                        App.KillExcel(excel);
+                        excel = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    Trace.TraceInformation("Rudy Exception=> UpdateDDPalReportAsync： " + e.Source + ";" + e.Message);
+                    return false;
+                }
+
+                return true;
+            }).ConfigureAwait(false);
+            return bRet;
+        }
+
+        public async Task<bool> SetDDAccoutInfoAsync(string FilePath)
+        {
+            bool bRet = await Task.Run(() =>
+            {
+                if (aDDAccount != null)
+                    aDDAccount.Clear();
+                try
+                {
+                    Application excel = new Application();
+                    excel.Visible = false;
+                    Workbook wb = excel.Workbooks.Open(FilePath);
+                    Worksheet ws = wb.ActiveSheet as Worksheet;
+                    int nRowCount = ws.UsedRange.Cells.Rows.Count;//get the used rows count.
+
+                    DDAccount infoTemp;
+
+                    for (int i = 2; i <= nRowCount; i++)
+                    {
+                        infoTemp.UserName = ((Range)ws.Cells[i, 1]).Text;
+                        infoTemp.Password = ((Range)ws.Cells[i, 2]).Text;
+                        aDDAccount.Add(infoTemp);
+                    }
+                    if (wb != null)
+                        wb.Close();
+                    if (excel != null)
+                    {
+                        excel.Quit();
+                        App.KillExcel(excel);
+                        excel = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    Trace.TraceInformation("Rudy Exception=> SetDDAccoutInfoAsync： " + e.Source + ";" + e.Message);
+                    return false;
+                }
+
+                return true;
+            }).ConfigureAwait(false);
             return bRet;
         }
 
@@ -326,7 +518,6 @@ namespace DangDangAutoPal.Models
         {
             try
             {
-                //driver.Navigate().GoToUrl(Globals.LOGIN_URL);
                 var linkQQLogin = await WaitForElementAsync(Globals.QQ_LOGIN_XPATH, "XPath").ConfigureAwait(false);
                 Trace.WriteLine("Rudy Trace =>LoginAsync: click QQLogin link.");
                 linkQQLogin.Click();
@@ -338,7 +529,6 @@ namespace DangDangAutoPal.Models
 
                 var tabAccoutLogin = await WaitForElementAsync(Globals.QQ_SWITCH_ACCOUNT_LOGIN_ID, "Id").ConfigureAwait(false);
                 tabAccoutLogin.Click();
-                Thread.Sleep(1000);
 
                 var inputQQAccount = await WaitForElementAsync(Globals.QQ_ACCOUNT_ID, "Id").ConfigureAwait(false);
                 inputQQAccount.Clear();
@@ -364,7 +554,7 @@ namespace DangDangAutoPal.Models
                 return false;
             }
 
-            bool bRet = await WaitForPageAsync(ReturnPageTitle, 30).ConfigureAwait(false);
+            bool bRet = await WaitForPageAsync(ReturnPageTitle).ConfigureAwait(false);
             if (!bRet)
             {
                 Trace.TraceInformation("Rudy Trace =>Log in time out.");
@@ -374,12 +564,21 @@ namespace DangDangAutoPal.Models
             return true;
         }
 
-        public async Task<bool> BindingDeliverAddress(AccountInfo info)
+        public async Task<bool> BindingDeliveryAddress(AccountInfo info)
         {
-            bool bRet = await LoginAsync(info.QQAccount, info.QQPassword, "dangdang").ConfigureAwait(false);
+            await PrepareEnvironmentAsync(BrowserIndex).ConfigureAwait(false);
+
+            bool bRet = OpenBrowser(BrowserIndex);
             if (!bRet)
             {
-                Trace.TraceInformation("Rudy Trace =>Log in Failed!");
+                Trace.TraceInformation("Rudy Trace =>BindingDeliveryAddress: Open browser failed.");
+                return false;
+            } 
+
+            bRet = await LoginAsync(info.QQAccount, info.QQPassword, "dangdang").ConfigureAwait(false);
+            if (!bRet)
+            {
+                Trace.TraceInformation("Rudy Trace =>BindingDeliveryAddress: Log in Failed!");
                 return false;
             }
 
@@ -387,7 +586,7 @@ namespace DangDangAutoPal.Models
             {
                 driver.Navigate().GoToUrl(Globals.ONEKEY_BUY_URL);
 
-                var btnAddAddress = await WaitForElementAsync(Globals.BTN_ADD_ADDRESS_CLASS, "Class", 30).ConfigureAwait(false);
+                var btnAddAddress = await WaitForElementAsync(Globals.BTN_ADD_ADDRESS_CLASS, "Class").ConfigureAwait(false);
                 btnAddAddress.Click();
 
                 var inputShipMan = await WaitForElementAsync(Globals.SHIP_MAN_ID, "Id").ConfigureAwait(false);
@@ -463,7 +662,7 @@ namespace DangDangAutoPal.Models
                 Trace.TraceInformation("Rudy Trace =>Set Address Account Info Success!");
                 foreach (AccountInfo info in aAccountInfo)
                 {
-                    bRet = await BindingDeliverAddress(info).ConfigureAwait(false);
+                    bRet = await BindingDeliveryAddress(info).ConfigureAwait(false);
                     if (bRet)
                         Trace.TraceInformation("Rudy Trace =>Accout[{0}]Binding Success!", info.QQAccount);
                     else
@@ -478,7 +677,7 @@ namespace DangDangAutoPal.Models
         {
             try
             {
-                App.MouseMove(500, 0);
+                App.MouseMove(1000, 0);
                 var cbxColor = await WaitForElementAsync(Globals.COLOR_IMAGE1_XPATH, "XPath").ConfigureAwait(false);
                 cbxColor.Click();
 
@@ -497,7 +696,7 @@ namespace DangDangAutoPal.Models
                     var btnConfirmOneKeyBuy = await WaitForElementAsync(Globals.BTN_CONFIRM_BUY_ID, "Id").ConfigureAwait(false);
                     btnConfirmOneKeyBuy.Click();
                 }
-                bool bRet = await WaitForPageAsync(Globals.PAYMENT_TITLE, 30).ConfigureAwait(false);
+                bool bRet = await WaitForPageAsync(Globals.PAYMENT_TITLE).ConfigureAwait(false);
                 if (!bRet)
                     return false;
             }
@@ -518,6 +717,12 @@ namespace DangDangAutoPal.Models
         {
             try
             {
+                var txtOrderMoney = await WaitForElementAsync(Globals.TXT_PAYMENT_MONEY_ID, "Id").ConfigureAwait(false);
+                OrderMoney = txtOrderMoney.Text;
+
+                var txtOrderNo = await WaitForElementAsync(Globals.TXT_ORDER_NO_ID, "Id").ConfigureAwait(false);
+                OrderNo = txtOrderNo.Text;
+
                 var tabPayPlatform = await WaitForElementAsync(Globals.TAB_PAYMENT_PLATFORM_ID, "Id").ConfigureAwait(false);
                 tabPayPlatform.Click();
 
@@ -528,7 +733,7 @@ namespace DangDangAutoPal.Models
                 var btnNext = await WaitForElementAsync(Globals.BTN_NEXT_ID, "Id").ConfigureAwait(false);
                 btnNext.Click();
 
-                bool bRet = await WaitForPageAsync(Globals.TENPAY_TITLE, 30).ConfigureAwait(false);
+                bool bRet = await WaitForPageAsync(Globals.TENPAY_TITLE).ConfigureAwait(false);
                 if (!bRet)
                     return false;
             }
@@ -553,6 +758,7 @@ namespace DangDangAutoPal.Models
                 inputTenpayUser.Clear();
                 inputTenpayUser.SendKeys(TenpayUser);
                 var inputTenpayPass = await WaitForElementAsync(Globals.TENPAY_PASSWORD_ID, "Id").ConfigureAwait(false);
+                inputTenpayPass.Clear();
                 inputTenpayPass.SendKeys(TenpayPass);
 
                 await Task.Delay(3000).ConfigureAwait(false);
@@ -632,12 +838,56 @@ namespace DangDangAutoPal.Models
             return true;
         }
 
-        public async Task<bool> AutoPalProcessAsync(string Account, string Password, string ProductLink)
+        public async Task AutoPalAllAccount()
         {
+            string ReportPath = System.Environment.CurrentDirectory + "//当当拍货报表_" + DateTime.Now.ToString();
+            int nCount = 1;
+            bool bSuccess = false;
+
+            bool bRet = await SetDDAccoutInfoAsync(QQAccountFile).ConfigureAwait(false);
+            if (bRet)
+            {
+                bRet = await CreateDDPalReportAsync(ReportPath).ConfigureAwait(false);
+                if (bRet)
+                {
+                    foreach (DDAccount account in aDDAccount)
+                    {
+                        bSuccess = await AutoPalProcessAsync(account.UserName, account.Password).ConfigureAwait(false);
+                        bRet = await UpdateDDPalReportAsync(ReportPath, nCount, bSuccess).ConfigureAwait(false);
+                        if (!bRet)
+                            Trace.TraceInformation("Rudy Trace =>AutoPalAllAccount: Update Report Failed[Line: {0}]!", nCount + 1);
+                        nCount++;
+                    }
+                }
+                else
+                {
+                    Trace.TraceInformation("Rudy Trace =>AutoPalAllAccount: Create Report Failed!");
+                }
+
+            }
+            else
+            {
+                Trace.TraceInformation("Rudy Trace =>AutoPalAllAccount: SetDDAccoutInfoAsync Failed!");
+            }
+        }
+
+        public async Task<bool> AutoPalProcessAsync(string Account, string Password)
+        {
+            Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: : Prepare the environment...");
+            await PrepareEnvironmentAsync(BrowserIndex);
+            Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: : Environment ready！");
+
+            bool bRet = OpenBrowser(BrowserIndex);
+            if (!bRet)
+            {
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Open browser failed.");
+                return false;
+            }                
+
             Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Go to link[{0}]", ProductLink);
             await Task.Run(() =>
             {
-                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Waitting for page load...");
+                Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Page is loading...");
                 driver.Navigate().GoToUrl(ProductLink);
             }).ConfigureAwait(false);
 
@@ -647,7 +897,7 @@ namespace DangDangAutoPal.Models
             Trace.WriteLine("Rudy Trace =>AutoPalProcessAsync: click Login Link.");
             linkLogin.Click();
 
-            bool bRet = await WaitForPageAsync(Globals.LOGIN_PAGE_TITLE, 30).ConfigureAwait(false);
+            bRet = await WaitForPageAsync(Globals.LOGIN_PAGE_TITLE, 30).ConfigureAwait(false);
             if (!bRet)
                 return false;
 
@@ -672,9 +922,7 @@ namespace DangDangAutoPal.Models
                 return false;
             }
 
-            string TenpayUserName = "672045573";
-            string TenpayPWD = "mbi@88820";
-            bRet = await TenpayAsync(TenpayUserName, TenpayPWD).ConfigureAwait(false);
+            bRet = await TenpayAsync(TenpayAccount, TenpayPassword).ConfigureAwait(false);
             if (!bRet)
             {
                 Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: TenPay Failed!");
@@ -720,6 +968,51 @@ namespace DangDangAutoPal.Models
                 return null;
             }
             
+        }
+
+        private Task PrepareEnvironmentAsync(int nBrowserIndex)
+        {
+            return Task.Run(() =>
+            {
+                if (nBrowserIndex == 0)
+                {
+                    Process[] pBrowsers = Process.GetProcessesByName("chrome");
+                    foreach (Process pBrowser in pBrowsers)
+                    {
+                        pBrowser.Kill();
+                    }
+                    Process[] pDrivers = Process.GetProcessesByName("chromedriver");
+                    foreach (Process pDriver in pDrivers)
+                    {
+                        pDriver.Kill();
+                    }
+                }
+                else if (nBrowserIndex == 1)
+                {
+                    Process[] pBrowsers = Process.GetProcessesByName("iexplore");
+                    foreach (Process pBrowser in pBrowsers)
+                    {
+                        pBrowser.Kill();
+                    }
+                    Process[] pDrivers = Process.GetProcessesByName("IEDriverServer");
+                    foreach (Process pDriver in pDrivers)
+                    {
+                        pDriver.Kill();
+                    }
+                }
+                else if (nBrowserIndex == 2)
+                {
+                    Process[] pBrowsers = Process.GetProcessesByName("firefox");
+                    foreach (Process pBrowser in pBrowsers)
+                    {
+                        pBrowser.Kill();
+                    }
+                }
+                else
+                {
+                    Trace.TraceInformation("Rudy Trace =>Invalid Browser Type.");
+                }
+            });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

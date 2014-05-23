@@ -37,6 +37,7 @@ namespace DangDangAutoPal
         private AutoPal DangDangPal;
         private log DDLog;
         private string LogPath;
+        private string ReportPath;
 
         public MainWindow()
         {
@@ -45,6 +46,7 @@ namespace DangDangAutoPal
             this.DataContext = DangDangPal;
             pwdBoxADSL.Password = Settings.Default.ADSLPasswordSettings;
             LogPath = System.Environment.CurrentDirectory + "\\DDEvent.log";
+            ReportPath = System.Environment.CurrentDirectory;
             DDLog = new log();
         }
         
@@ -99,7 +101,6 @@ namespace DangDangAutoPal
                 gdBeginPal.Visibility = Visibility.Visible;
                 gdPalling.Visibility = Visibility.Hidden;
             }
-            
         }
 
         private void OnBrowserBindQQAccount(object sender, RoutedEventArgs e)
@@ -115,13 +116,28 @@ namespace DangDangAutoPal
 
         private async void OnBeginBind(object sender, RoutedEventArgs e)
         {
-            await PrepareEnvironmentAsync(DangDangPal.BrowserIndex);
+            if (btnBind.Content.Equals("开始绑定"))
+            {
+                btnBind.Content = "停止绑定";
+                try
+                {
+                    await DangDangPal.BindAllAccountAddressAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    Trace.TraceInformation("Rudy Trace =>OnBeginBind: Bind Address Stopped.");
+                } 
+            }
+            else if (btnBind.Content.Equals("停止绑定"))
+            {
+                Trace.TraceInformation("Rudy Trace =>OnStopPalling: Stoppig bind...");
+                btnBind.Content = "正在取消...";
+                btnBind.IsEnabled = false;
+                DangDangPal.CancelWaitting();
+            }
 
-            bool bRet = DangDangPal.SetWebDriver(DangDangPal.BrowserIndex);
-            if (bRet)
-                await DangDangPal.BindAllAccountAddressAsync();
-            else
-                Trace.TraceInformation("Rudy Trace =>OnBeginBind: Set web driver failed.");
+            btnBind.IsEnabled = true;
+            btnBind.Content = "开始绑定";
         }
 
         private async void OnBeginPal(object sender, RoutedEventArgs e)
@@ -131,72 +147,19 @@ namespace DangDangAutoPal
             gdPalling.Visibility = Visibility.Visible;
             btnStop.Content = "停止拍货";
 
-            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Prepare the environment...");
-            await PrepareEnvironmentAsync(DangDangPal.BrowserIndex);
-            Trace.WriteLine("Rudy Trace =>PrepareEnvironmentAsync: Environment ready！");
-
-            string ProductLink = "http://product.dangdang.com/1263628906.html";
-            bool bRet = DangDangPal.SetWebDriver(DangDangPal.BrowserIndex);
             try
             {
-                if(bRet)
-                    await DangDangPal.AutoPalProcessAsync("2508961540", "abc123456", ProductLink);
-                else
-                    Trace.WriteLine("Rudy Trace =>OnBeginPal: Set Web Driver Failed.");
+                await DangDangPal.AutoPalAllAccount();
             }
             catch (OperationCanceledException)
             {
                 Trace.TraceInformation("Rudy Trace =>OnBeginPal: Pal Stopped.");
-                btnStop.IsEnabled = true;
             }
-
+            
+            btnStop.IsEnabled = true;
             btnStop.Content = "返回";
         }
 
-        private Task PrepareEnvironmentAsync(int BrowserIndex)
-        {
-            return Task.Run(() =>
-            {
-                if (BrowserIndex == 0)
-                {
-                    Process[] pBrowsers = Process.GetProcessesByName("chrome");
-                    foreach (Process pBrowser in pBrowsers)
-                    {
-                        pBrowser.Kill();
-                    }
-                    Process[] pDrivers = Process.GetProcessesByName("chromedriver");
-                    foreach (Process pDriver in pDrivers)
-                    {
-                        pDriver.Kill();
-                    }
-                }
-                else if (BrowserIndex == 1)
-                {
-                    Process[] pBrowsers = Process.GetProcessesByName("iexplore");
-                    foreach (Process pBrowser in pBrowsers)
-                    {
-                        pBrowser.Kill();
-                    }
-                    Process[] pDrivers = Process.GetProcessesByName("IEDriverServer");
-                    foreach (Process pDriver in pDrivers)
-                    {
-                        pDriver.Kill();
-                    }
-                }
-                else if (BrowserIndex == 2)
-                {
-                    Process[] pBrowsers = Process.GetProcessesByName("firefox");
-                    foreach (Process pBrowser in pBrowsers)
-                    {
-                        pBrowser.Kill();
-                    }
-                }
-                else
-                {
-                    Trace.TraceInformation("Rudy Trace =>Invalid Browser Type.");
-                }
-            });
-        }
 
         private void CleanUp()
         {
@@ -216,10 +179,21 @@ namespace DangDangAutoPal
             DangDangPal.SinglePalCount += 1;
         }
 
-        private void OnTest(object sender, RoutedEventArgs e)
+        private async void OnTest(object sender, RoutedEventArgs e)
         {
-            //WebClient webclient = new WebClient();
-            //webclient.getPage("www.dangdang.com");
+            await DangDangPal.TestExcelOperationAsync();
+        }
+
+        private void OnPalCountChanged(object sender, TextChangedEventArgs e)
+        {
+            //for (int i = 0; i < tbPalCount.Text.Length; i++)
+            //{
+                //if (!Char.IsNumber(tbPalCount.Text, 0))
+                //{
+                //    MessageBox.Show("拍货数量必须是整数", "当当自动拍货");
+                    //break;
+                //}
+            //}
         }
     }
 }

@@ -66,7 +66,9 @@ namespace DangDangAutoPal.Models
         public const string BUY_NOW_POPUP_ID = "div_onekey_select_pop";
         public const string BTN_CONFIRM_BUY_ID = "onekey_select_pop_confirm";
 
-        //Payment page
+        //Payment Platform page
+        public const string TXT_PAYMENT_MONEY_ID = "lblAmount";
+        public const string TXT_ORDER_NO_ID = "lblNo";
         public const string TAB_PAYMENT_PLATFORM_ID = "go_tab3";
         public const string RADIO_TENPAY_XPATH = "//p[@bid='44']/input";
         public const string BTN_NEXT_ID = "A4";
