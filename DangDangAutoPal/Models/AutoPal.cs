@@ -20,6 +20,9 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Forms = System.Windows.Forms;
 using System.Reflection;
+using DangDangAutoPal.Properties;
+using System.Net;
+using System.Net.Sockets;
 
 
 namespace DangDangAutoPal.Models
@@ -34,6 +37,7 @@ namespace DangDangAutoPal.Models
         public string Province;
         public string City;
         public string Town;
+        public string ZipCode;
         public string DetailAddress;
     }
 
@@ -65,20 +69,6 @@ namespace DangDangAutoPal.Models
             {
                 _qqAccountFile = value;
                 OnPropertyChanged("QQAccountFile");
-            }
-        }
-
-        private string _tenpayAccountFile;
-        public string TenpayAccountFile
-        {
-            get
-            {
-                return _tenpayAccountFile;
-            }
-            set
-            {
-                _tenpayAccountFile = value;
-                OnPropertyChanged("TenpayAccountFile");
             }
         }
 
@@ -125,18 +115,42 @@ namespace DangDangAutoPal.Models
             }        
         }
 
-        public string TenpayAccount { get; set; }
-        public string TenpayPassword { get; set; }
+
+        private string _localIpAddress;
+        public string LocalIpAddress
+        {
+            get
+            {
+                return _localIpAddress;
+            }
+            set
+            {
+                _localIpAddress = value;
+                OnPropertyChanged("LocalIpAddress");
+            }
+        }
+
+        private int _successPalCount;
+        public int SuccessPalCount
+        {
+            get
+            {
+                return _successPalCount;
+            }
+            set
+            {
+                _successPalCount = value;
+                OnPropertyChanged("SuccessPalCount");
+            }
+        }
 
         public string ProductLink { get; set; }
         public string PseudoProductLink { get; set; }
         public string Remark { get; set; }
-        public string ADSLAccount { get; set; }
-        public string ADSLPassword { get; set; }
         public int TimeOut { get; set; }
         
-        public int SuccessPalCount { get; set; }
-
+        
+            
 
         //Functions
         public AutoPal()
@@ -144,15 +158,14 @@ namespace DangDangAutoPal.Models
             m_disposed = false;
             BrowserIndex = 0;
             QQAccountFile = "";
-            TenpayAccountFile = "";
             BindQQAccountFile = "";
-            TenpayAccount = "";
-            TenpayPassword = "";
             SinglePalCount = 1;
             ProductLink = "http://product.dangdang.com/1263628906.html";
             OrderMoney = "100";
             OrderNo = "T123456789";
             Remark = "111";
+            SuccessPalCount = 0;
+            LocalIpAddress = GetIpAddress();
             aAccountInfo = new List<AccountInfo>();
             aDDAccount = new List<DDAccount>();
             cts = new CancellationTokenSource();
@@ -296,10 +309,10 @@ namespace DangDangAutoPal.Models
 
         public async Task TestExcelOperationAsync()
         {
-            string reportpath = System.Environment.CurrentDirectory + "//当当拍货报表_" + DateTime.Now.ToString();
+            string reportpath = System.Environment.CurrentDirectory + "\\当当拍货报表";
             int nCount = 1;
             bool bSuccess = false;
-            
+            Trace.TraceInformation("Rudy Trace =>TestExcelOperationAsync, QQAccountFile = " + QQAccountFile);
             bool bRet = await SetDDAccoutInfoAsync(QQAccountFile).ConfigureAwait(false);
             if (bRet)
             {
@@ -310,7 +323,7 @@ namespace DangDangAutoPal.Models
                     foreach (DDAccount account in aDDAccount)
                     {
                         bSuccess = !bSuccess;
-                        bRet = await UpdateDDPalReportAsync(reportpath, nCount, bRet).ConfigureAwait(false);
+                        bRet = await UpdateDDPalReportAsync(reportpath, nCount, bSuccess).ConfigureAwait(false);
                         if (!bRet)
                             Trace.TraceInformation("Rudy Trace =>Update Report Failed[Line: {0}]!", nCount + 1);
                         nCount++;
@@ -330,6 +343,7 @@ namespace DangDangAutoPal.Models
 
         public async Task<bool> CreateDDPalReportAsync(string FilePath)
         {
+            Trace.TraceInformation("Rudy Trace =>CreateDDPalReportAsync: Report Path = " + FilePath);
             bool bRet = await Task.Run(() =>
             {
                 try
@@ -346,6 +360,11 @@ namespace DangDangAutoPal.Models
                     ws.Cells[1, 5] = "金额(元)";
                     ws.Cells[1, 6] = "备注";
                     ws.Cells[1, 7] = "已评论";
+                    for (int i = 1; i < 8; i++)
+                    {
+                        ((Range)(ws.Cells[1, i])).HorizontalAlignment = XlHAlign.xlHAlignLeft;
+                        ((Range)(ws.Cells[1, i])).ColumnWidth = 12;
+                    }
 
                     wb.SaveAs(FilePath);
 
@@ -383,6 +402,12 @@ namespace DangDangAutoPal.Models
 
                     int nRow = AccountNo + 1;
                     int nAccountIndex = AccountNo - 1;
+
+                    for (int i = 1; i < 8; i++)
+                    {
+                        ((Range)(ws.Cells[nRow, i])).HorizontalAlignment = XlHAlign.xlHAlignLeft;
+                    }
+
                     ws.Cells[nRow, 1] = aDDAccount[nAccountIndex].UserName;
                     ws.Cells[nRow, 2] = aDDAccount[nAccountIndex].Password;
                     if (bSuccess)
@@ -491,6 +516,7 @@ namespace DangDangAutoPal.Models
                         infoTemp.City = ((Range)ws.Cells[i, 6]).Text;
                         infoTemp.Town = ((Range)ws.Cells[i, 7]).Text;
                         infoTemp.DetailAddress = ((Range)ws.Cells[i, 8]).Text;
+                        infoTemp.ZipCode = "310012";
                         aAccountInfo.Add(infoTemp);
                     }
                     if (wb != null)
@@ -611,8 +637,8 @@ namespace DangDangAutoPal.Models
                 var inputAddressDetail = await WaitForElementAsync(Globals.ADDRESS_DETAIL_ID, "Id").ConfigureAwait(false);
                 inputAddressDetail.SendKeys(info.DetailAddress);
 
-                //var inputZipCode = await WaitForElementAsync(Globals.ZIP_CODE_ID, "Id");
-                //inputZipCode.SendKeys("310012");
+                var inputZipCode = await WaitForElementAsync(Globals.ZIP_CODE_ID, "Id");
+                inputZipCode.SendKeys(info.ZipCode);
 
                 var inputMobile = await WaitForElementAsync(Globals.MOBILE_ID, "Id").ConfigureAwait(false);
                 inputMobile.SendKeys(info.Mobile);
@@ -840,7 +866,7 @@ namespace DangDangAutoPal.Models
 
         public async Task AutoPalAllAccount()
         {
-            string ReportPath = System.Environment.CurrentDirectory + "//当当拍货报表_" + DateTime.Now.ToString();
+            string ReportPath = System.Environment.CurrentDirectory + "\\当当拍货报表";
             int nCount = 1;
             bool bSuccess = false;
 
@@ -922,17 +948,20 @@ namespace DangDangAutoPal.Models
                 return false;
             }
 
-            bRet = await TenpayAsync(TenpayAccount, TenpayPassword).ConfigureAwait(false);
+            bRet = await TenpayAsync(Settings.Default.TenpayAccount, Settings.Default.TenpayPassword);
             if (!bRet)
             {
                 Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: TenPay Failed!");
                 return false;
             }
+            SuccessPalCount++;
+            await RenewIpAddress().ConfigureAwait(false);
+            
 
             return true;
         }
 
-        private AutomationElement FindChildElementByClass(string ClassName, string BrowserWndClassName)
+        public AutomationElement FindChildElementByClass(string ClassName, string BrowserWndClassName)
         {
             try
             {
@@ -970,7 +999,7 @@ namespace DangDangAutoPal.Models
             
         }
 
-        private Task PrepareEnvironmentAsync(int nBrowserIndex)
+        public Task PrepareEnvironmentAsync(int nBrowserIndex)
         {
             return Task.Run(() =>
             {
@@ -979,12 +1008,14 @@ namespace DangDangAutoPal.Models
                     Process[] pBrowsers = Process.GetProcessesByName("chrome");
                     foreach (Process pBrowser in pBrowsers)
                     {
-                        pBrowser.Kill();
+                        if(!pBrowser.CloseMainWindow())
+                            pBrowser.Kill();
                     }
                     Process[] pDrivers = Process.GetProcessesByName("chromedriver");
                     foreach (Process pDriver in pDrivers)
                     {
-                        pDriver.Kill();
+                        if (!pDriver.CloseMainWindow())
+                            pDriver.Kill();
                     }
                 }
                 else if (nBrowserIndex == 1)
@@ -992,12 +1023,14 @@ namespace DangDangAutoPal.Models
                     Process[] pBrowsers = Process.GetProcessesByName("iexplore");
                     foreach (Process pBrowser in pBrowsers)
                     {
-                        pBrowser.Kill();
+                        if (!pBrowser.CloseMainWindow())
+                            pBrowser.Kill();
                     }
                     Process[] pDrivers = Process.GetProcessesByName("IEDriverServer");
                     foreach (Process pDriver in pDrivers)
                     {
-                        pDriver.Kill();
+                        if (!pDriver.CloseMainWindow())
+                            pDriver.Kill();
                     }
                 }
                 else if (nBrowserIndex == 2)
@@ -1005,7 +1038,8 @@ namespace DangDangAutoPal.Models
                     Process[] pBrowsers = Process.GetProcessesByName("firefox");
                     foreach (Process pBrowser in pBrowsers)
                     {
-                        pBrowser.Kill();
+                        if (!pBrowser.CloseMainWindow())
+                            pBrowser.Kill();
                     }
                 }
                 else
@@ -1013,6 +1047,61 @@ namespace DangDangAutoPal.Models
                     Trace.TraceInformation("Rudy Trace =>Invalid Browser Type.");
                 }
             });
+        }
+
+
+        public string GetIpAddress()
+        {
+            IPHostEntry IpEntry = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in IpEntry.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    return ip.ToString();
+            }
+            return null;
+        }
+
+        public async Task RenewIpAddress()
+        {
+            try
+            {
+                string DisconnectCMDLine = "rasdial /DISCONNECT";
+                string ConnectCMDLine = "rasdial 宽带连接 " + Settings.Default.ADSLAccount + " " + Settings.Default.ADSLPassword;
+
+                await RunCmd(DisconnectCMDLine).ConfigureAwait(false);
+                await Task.Delay(5000).ConfigureAwait(false);
+                await RunCmd(ConnectCMDLine).ConfigureAwait(false);
+                await Task.Delay(10000).ConfigureAwait(false);//wait for the new ip configuration
+            }
+            catch(Exception e)
+            {
+                Trace.TraceInformation("Rudy Trace =>RenewIpAddress: {0};{1}", e.Source, e.Message);
+            }
+            LocalIpAddress = GetIpAddress();
+        }
+
+        public async Task RunCmd(string CmdLine)
+        {
+            Task.Run(() =>
+            {
+                Process p = new Process();
+                p.StartInfo.FileName = "cmd.exe";
+                p.StartInfo.UseShellExecute = false;    //是否使用操作系统shell启动
+                p.StartInfo.RedirectStandardInput = true;//接受来自调用程序的输入信息
+                p.StartInfo.RedirectStandardOutput = true;//由调用程序获取输出信息
+                p.StartInfo.RedirectStandardError = true;//重定向标准错误输出
+                p.StartInfo.CreateNoWindow = true;//不显示程序窗口
+                p.Start();//启动程序
+
+                //向cmd窗口发送输入信息
+                p.StandardInput.WriteLine(CmdLine + "&exit");
+                p.StandardInput.AutoFlush = true;
+                //向标准输入写入要执行的命令。这里使用&是批处理命令的符号，表示前面一个命令不管是否执行成功都执行后面(exit)命令，如果不执行exit命令，后面调用ReadToEnd()方法会假死
+                //同类的符号还有&&和||前者表示必须前一个命令执行成功才会执行后面的命令，后者表示必须前一个命令执行失败才会执行后面的命令
+
+                p.WaitForExit();//等待程序执行完退出进程
+                p.Close();
+            }); 
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -1031,10 +1120,8 @@ namespace DangDangAutoPal.Models
  
         protected virtual void Dispose(bool disposing)
         {
-            Debug.WriteLine("Rudy Debug =>Dispose Here11");
             if (!m_disposed)
             {
-                Debug.WriteLine("Rudy Debug =>Dispose Here22");
                 if (disposing)
                 {
                     //release managed resources.
@@ -1057,7 +1144,6 @@ namespace DangDangAutoPal.Models
   
         ~AutoPal()
         {
-            Debug.WriteLine("Rudy Debug =>Destructed!");
             Dispose(false);
         }
   

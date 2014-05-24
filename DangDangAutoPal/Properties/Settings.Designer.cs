@@ -25,25 +25,49 @@ namespace DangDangAutoPal.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ADSLAccount")]
-        public string ADSLAccountSettings {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ADSLAccount {
             get {
-                return ((string)(this["ADSLAccountSettings"]));
+                return ((string)(this["ADSLAccount"]));
             }
             set {
-                this["ADSLAccountSettings"] = value;
+                this["ADSLAccount"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ADSLPass")]
-        public string ADSLPasswordSettings {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ADSLPassword {
             get {
-                return ((string)(this["ADSLPasswordSettings"]));
+                return ((string)(this["ADSLPassword"]));
             }
             set {
-                this["ADSLPasswordSettings"] = value;
+                this["ADSLPassword"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TenpayAccount {
+            get {
+                return ((string)(this["TenpayAccount"]));
+            }
+            set {
+                this["TenpayAccount"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TenpayPassword {
+            get {
+                return ((string)(this["TenpayPassword"]));
+            }
+            set {
+                this["TenpayPassword"] = value;
             }
         }
     }

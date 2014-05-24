@@ -2,11 +2,17 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DangDangAutoPal.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="ADSLAccountSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ADSLAccount</Value>
+    <Setting Name="ADSLAccount" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ADSLPasswordSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ADSLPass</Value>
+    <Setting Name="ADSLPassword" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TenpayAccount" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TenpayPassword" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

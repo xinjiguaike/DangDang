@@ -37,22 +37,20 @@ namespace DangDangAutoPal
         private AutoPal DangDangPal;
         private log DDLog;
         private string LogPath;
-        private string ReportPath;
 
         public MainWindow()
         {
             InitializeComponent();
             DangDangPal = new AutoPal();
             this.DataContext = DangDangPal;
-            pwdBoxADSL.Password = Settings.Default.ADSLPasswordSettings;
+            pwdBoxADSL.Password = Settings.Default.ADSLPassword;
+            pwdBoxTenpay.Password = Settings.Default.TenpayPassword;
             LogPath = System.Environment.CurrentDirectory + "\\DDEvent.log";
-            ReportPath = System.Environment.CurrentDirectory;
             DDLog = new log();
         }
         
         private void OnMainWindow_Closed(object sender, EventArgs e)
         {
-            Settings.Default.ADSLPasswordSettings = pwdBoxADSL.Password;
             Settings.Default.Save();
             CleanUp();
             Trace.TraceInformation("Rudy Trace =>Application Exited.");
@@ -69,22 +67,6 @@ namespace DangDangAutoPal
             Nullable<bool> result = dlg.ShowDialog();
             if (result == true)
                 DangDangPal.QQAccountFile = dlg.FileName;
-        }
-
-        private void OnBrowserTenPay(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.DefaultExt = ".xlsx";
-            dlg.Filter = "Excel(2007,2010)|*.xlsx";
-
-            Nullable<bool> result = dlg.ShowDialog();
-            if (result == true)
-                DangDangPal.TenpayAccountFile = dlg.FileName;
-        }
-
-        private void OnPWDChanged(object sender, RoutedEventArgs e)
-        {
-            DangDangPal.ADSLPassword = pwdBoxADSL.Password;
         }
 
         private void OnStopPalling(object sender, RoutedEventArgs e)
@@ -194,6 +176,17 @@ namespace DangDangAutoPal
                     //break;
                 //}
             //}
+        }
+
+        private void OnADSLPWDChanged(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.ADSLPassword = pwdBoxADSL.Password;
+            
+        }
+
+        private void OnTenpayPWDChanged(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.TenpayPassword = pwdBoxTenpay.Password;
         }
     }
 }
