@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:p="clr-namespace:DangDangAutoPal.Properties"
-        Title="当当自动拍货" Height="570" Width="719"
+        Title="当当自动拍货" Height="570" Width="629"
         ResizeMode="CanMinimize"
         Closed="OnMainWindow_Closed">
     <Grid>
@@ -15,9 +15,9 @@
                             <ColumnDefinition Width="49*"/>
                             <ColumnDefinition Width="111*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="tbQQAccount" Text="{Binding QQAccountFile, Source={x:Static p:Settings.Default}, Mode=TwoWay}" HorizontalAlignment="Left" Height="23" Margin="68,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="479" Grid.ColumnSpan="2"/>
-                        <Button Content="..." Click="OnBrowserQQ" HorizontalAlignment="Left" Margin="359,35,0,0" VerticalAlignment="Top" Width="51" Height="23" RenderTransformOrigin="-0.131,0.435" Grid.Column="1"/>
-                        <Button Content="开始拍货" Margin="20,389,252,0" VerticalAlignment="Top" Height="28" Click="OnBeginPal" Grid.Column="1"/>
+                        <TextBox x:Name="tbQQAccount" Text="{Binding QQAccountFile, Source={x:Static p:Settings.Default}, Mode=TwoWay}" HorizontalAlignment="Left" Height="23" Margin="68,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410" Grid.ColumnSpan="2"/>
+                        <Button Content="..." Click="OnBrowserQQ" HorizontalAlignment="Left" Margin="286,35,0,0" VerticalAlignment="Top" Width="45" Height="23" RenderTransformOrigin="-0.131,0.435" Grid.Column="1"/>
+                        <Button Content="开始拍货" Margin="205,390,283,0" VerticalAlignment="Top" Height="28" Click="OnBeginPal" Grid.ColumnSpan="2"/>
                         <Label Content="宝贝链接：" HorizontalAlignment="Left" Margin="63,135,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25"/>
                         <TextBox x:Name="tbProductLink" HorizontalAlignment="Left" Text="{Binding ProductLink, Source={x:Static p:Settings.Default}, Mode=TwoWay}" Height="23" Margin="138,137,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="409" Grid.ColumnSpan="2"/>
                         <Label Content="推广链接：" HorizontalAlignment="Left" Margin="63,178,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.4" Width="70" Height="25"/>
@@ -65,9 +65,9 @@
                         <ColumnDefinition Width="5*"/>
                         <ColumnDefinition Width="168*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="tbBindQQAccount" Text="{Binding BindQQAccountFile, Source={x:Static p:Settings.Default}, Mode=TwoWay}" HorizontalAlignment="Left" Height="23" Margin="41,153,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="443" Grid.Column="1"/>
-                    <Button Content="..." Click="OnBrowserBindQQAccount" HorizontalAlignment="Left" Margin="534,153,0,0" VerticalAlignment="Top" Width="51" Height="23" RenderTransformOrigin="0.471,-2.087" Grid.Column="1"/>
-                    <Button x:Name="btnBind" Content="开始绑定" Margin="230,250,250,0" VerticalAlignment="Top" Height="28" Click="OnBeginBind" Grid.Column="1"/>
+                    <TextBox Name="tbBindQQAccount" Text="{Binding BindQQAccountFile, Source={x:Static p:Settings.Default}, Mode=TwoWay}" HorizontalAlignment="Left" Height="23" Margin="41,153,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="411" Grid.Column="1"/>
+                    <Button Content="..." Click="OnBrowserBindQQAccount" HorizontalAlignment="Left" Margin="477,153,0,0" VerticalAlignment="Top" Width="40" Height="23" RenderTransformOrigin="0.471,-2.087" Grid.Column="1"/>
+                    <Button x:Name="btnBind" Content="开始绑定" Margin="185,245,295,0" VerticalAlignment="Top" Height="28" Click="OnBeginBind" Grid.Column="1"/>
                     <Label Content="QQ账户密码与地址信息文件：" HorizontalAlignment="Left" Margin="41,123,0,0" VerticalAlignment="Top" Width="267" Grid.Column="1"/>
                 </Grid>
             </TabItem>
@@ -77,9 +77,9 @@
                 <StackPanel x:Name="spStatus" Orientation="Horizontal" VerticalAlignment="Bottom" Width="710" Height="25">
                     <TextBlock Text="当前成功拍货的订单数量：" VerticalAlignment="Bottom"/>
                     <TextBlock x:Name="tbPaySuccess" Text="{Binding SuccessPalCount}" VerticalAlignment="Bottom"/>
-                    <TextBlock Text="当前机器IP：" Margin="380, 0 ,0 ,0" VerticalAlignment="Bottom"/>
+                    <TextBlock Text="当前机器IP：" Margin="300, 0 ,0 ,0" VerticalAlignment="Bottom"/>
                     <TextBlock x:Name="tbIpAddress" Text="{Binding LocalIpAddress}" VerticalAlignment="Bottom"/>
-                    
+
                 </StackPanel>
 
             </StatusBar>

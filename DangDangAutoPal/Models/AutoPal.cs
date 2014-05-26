@@ -148,8 +148,6 @@ namespace DangDangAutoPal.Models
 
                 driver = new ChromeDriver(Options);
                 App.WindowHide(Globals.CHROME_DRIVER_TITLE);
-                //driver = new RemoteWebDriver(DesiredCapabilities.HtmlUnit());
-                //IWebDriver driver = new RemoteWebDriver(DesiredCapabilities.HtmlUnitWithJavaScript());
             }
             else if (BrowserIndex == 1)
             {
