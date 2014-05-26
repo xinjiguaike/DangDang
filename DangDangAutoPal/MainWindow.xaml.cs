@@ -56,8 +56,6 @@ namespace DangDangAutoPal
             Trace.TraceInformation("Rudy Trace =>Application Exited.");
         }
 
-        
-
         private void OnBrowserQQ(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
@@ -66,7 +64,7 @@ namespace DangDangAutoPal
 
             Nullable<bool> result = dlg.ShowDialog();
             if (result == true)
-                DangDangPal.QQAccountFile = dlg.FileName;
+                Settings.Default.QQAccountFile = dlg.FileName;
         }
 
         private void OnStopPalling(object sender, RoutedEventArgs e)
@@ -93,7 +91,7 @@ namespace DangDangAutoPal
 
             Nullable<bool> result = dlg.ShowDialog();
             if (result == true)
-                DangDangPal.BindQQAccountFile = dlg.FileName;
+                Settings.Default.BindQQAccountFile = dlg.FileName;
         }
 
         private async void OnBeginBind(object sender, RoutedEventArgs e)
@@ -124,6 +122,38 @@ namespace DangDangAutoPal
 
         private async void OnBeginPal(object sender, RoutedEventArgs e)
         {
+            if (tbQQAccount.Text.Length == 0)
+            {
+                MessageBox.Show("QQ账户信息文件不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (tbTenpayAccount.Text.Length == 0)
+            {
+                MessageBox.Show("财付通账户不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (pwdBoxTenpay.Password.Length == 0)
+            {
+                MessageBox.Show("财付通密码不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (tbProductLink.Text.Length == 0)
+            {
+                MessageBox.Show("宝贝链接不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (tbADSLAccount.Text.Length == 0)
+            {
+                MessageBox.Show("宽带账户不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (pwdBoxADSL.Password.Length == 0)
+            {
+                MessageBox.Show("宽带密码不能为空！", Globals.DANGDANG_CAPTION, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+                            
             Trace.WriteLine(">>>>>>>>>>>>>>>>>>>>Rudy Trace =>OnBeginPal: Pal Start<<<<<<<<<<<<<<<<<<<<");
             gdBeginPal.Visibility = Visibility.Hidden;
             gdPalling.Visibility = Visibility.Visible;
@@ -159,11 +189,6 @@ namespace DangDangAutoPal
         private void OnAdd_Click(object sender, RoutedEventArgs e)
         {
             DangDangPal.SinglePalCount += 1;
-        }
-
-        private async void OnTest(object sender, RoutedEventArgs e)
-        {
-            await DangDangPal.TestExcelOperationAsync();
         }
 
         private void OnPalCountChanged(object sender, TextChangedEventArgs e)

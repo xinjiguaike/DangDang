@@ -70,5 +70,65 @@ namespace DangDangAutoPal.Properties {
                 this["TenpayPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ProductLink {
+            get {
+                return ((string)(this["ProductLink"]));
+            }
+            set {
+                this["ProductLink"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Remark {
+            get {
+                return ((string)(this["Remark"]));
+            }
+            set {
+                this["Remark"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string QQAccountFile {
+            get {
+                return ((string)(this["QQAccountFile"]));
+            }
+            set {
+                this["QQAccountFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BindQQAccountFile {
+            get {
+                return ((string)(this["BindQQAccountFile"]));
+            }
+            set {
+                this["BindQQAccountFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PseudoProductLink {
+            get {
+                return ((string)(this["PseudoProductLink"]));
+            }
+            set {
+                this["PseudoProductLink"] = value;
+            }
+        }
     }
 }

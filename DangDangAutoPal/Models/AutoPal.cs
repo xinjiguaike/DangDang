@@ -54,38 +54,8 @@ namespace DangDangAutoPal.Models
         private List<AccountInfo> aAccountInfo;
         private List<DDAccount> aDDAccount;
         private CancellationTokenSource cts;
-        
         private string OrderMoney;
         private string OrderNo;
-
-        private string _qqAccountFile;
-        public string QQAccountFile 
-        { 
-            get
-            {
-                return _qqAccountFile;
-            } 
-            set
-            {
-                _qqAccountFile = value;
-                OnPropertyChanged("QQAccountFile");
-            }
-        }
-
-        private string _bindQQAccountFile;
-        public string BindQQAccountFile
-        {
-            get
-            {
-                return _bindQQAccountFile;
-            }
-            set
-            {
-                _bindQQAccountFile = value;
-                OnPropertyChanged("BindQQAccountFile");
-            }
-        
-        }
 
         private int _singlePalCount;
         public int SinglePalCount
@@ -142,28 +112,16 @@ namespace DangDangAutoPal.Models
                 _successPalCount = value;
                 OnPropertyChanged("SuccessPalCount");
             }
-        }
-
-        public string ProductLink { get; set; }
-        public string PseudoProductLink { get; set; }
-        public string Remark { get; set; }
-        public int TimeOut { get; set; }
-        
-        
-            
+        }    
 
         //Functions
         public AutoPal()
         {
             m_disposed = false;
             BrowserIndex = 0;
-            QQAccountFile = "";
-            BindQQAccountFile = "";
             SinglePalCount = 1;
-            ProductLink = "http://product.dangdang.com/1263628906.html";
             OrderMoney = "100";
             OrderNo = "T123456789";
-            Remark = "111";
             SuccessPalCount = 0;
             LocalIpAddress = GetIpAddress();
             aAccountInfo = new List<AccountInfo>();
@@ -307,40 +265,6 @@ namespace DangDangAutoPal.Models
         }
 
 
-        public async Task TestExcelOperationAsync()
-        {
-            string reportpath = System.Environment.CurrentDirectory + "\\当当拍货报表";
-            int nCount = 1;
-            bool bSuccess = false;
-            Trace.TraceInformation("Rudy Trace =>TestExcelOperationAsync, QQAccountFile = " + QQAccountFile);
-            bool bRet = await SetDDAccoutInfoAsync(QQAccountFile).ConfigureAwait(false);
-            if (bRet)
-            {
-                bRet = await CreateDDPalReportAsync(reportpath).ConfigureAwait(false);
-                if (bRet)
-                {
-                    Trace.TraceInformation("Rudy Trace =>Set DangDang Account Info Success!");
-                    foreach (DDAccount account in aDDAccount)
-                    {
-                        bSuccess = !bSuccess;
-                        bRet = await UpdateDDPalReportAsync(reportpath, nCount, bSuccess).ConfigureAwait(false);
-                        if (!bRet)
-                            Trace.TraceInformation("Rudy Trace =>Update Report Failed[Line: {0}]!", nCount + 1);
-                        nCount++;
-                    }
-                }
-                else
-                {
-                    Trace.TraceInformation("Rudy Trace =>Create Report Failed!");
-                }
-
-            }
-            else
-            {
-                Trace.TraceInformation("Rudy Trace =>SetDDAccoutInfoAsync Failed!");
-            }      
-        }
-
         public async Task<bool> CreateDDPalReportAsync(string FilePath)
         {
             Trace.TraceInformation("Rudy Trace =>CreateDDPalReportAsync: Report Path = " + FilePath);
@@ -415,7 +339,7 @@ namespace DangDangAutoPal.Models
                         ws.Cells[nRow, 3] = OrderNo;
                         ws.Cells[nRow, 4] = SinglePalCount;
                         ws.Cells[nRow, 5] = OrderMoney;
-                        ws.Cells[nRow, 6] = Remark;
+                        ws.Cells[nRow, 6] = Settings.Default.Remark;
                         ws.Cells[nRow, 7] = "否";
                     }
                     else
@@ -682,7 +606,7 @@ namespace DangDangAutoPal.Models
 
         public async Task BindAllAccountAddressAsync()
         {
-            bool bRet = await SetAddressAccoutInfoAsync(BindQQAccountFile).ConfigureAwait(false);
+            bool bRet = await SetAddressAccoutInfoAsync(Settings.Default.BindQQAccountFile).ConfigureAwait(false);
             if (bRet)
             {
                 Trace.TraceInformation("Rudy Trace =>Set Address Account Info Success!");
@@ -699,7 +623,7 @@ namespace DangDangAutoPal.Models
                 Trace.TraceInformation("Rudy Trace =>Set Address Account Info Failed!");
         }
 
-        public async Task<bool> PalProductAsync(string ProductLink, string Account, string Password)
+        public async Task<bool> PalProductAsync()
         {
             try
             {
@@ -803,27 +727,31 @@ namespace DangDangAutoPal.Models
                 radioBalance = await WaitForElementAsync(Globals.RADIO_BALANCEPAY_CLASS, "Class").ConfigureAwait(false);
                 if (!radioBalance.Selected)
                     radioBalance.Click();
-                  
+                
+                #region==========Comment for Tenpay Password Input========================
+                /*
+                 *  
                 AutomationElement ctrlPassword = FindChildElementByClass("Edit", "Chrome_WidgetWin_1");
                 if (ctrlPassword == null)
                 {
                     Trace.TraceInformation("Rudy Trace =>ctrlPassword is null.");
                     return false;
                 }
+
                 System.Windows.Point ctrlPassPosition = ctrlPassword.GetClickablePoint();
                 int password_X = (int)ctrlPassPosition.X;
                 int password_Y = (int)ctrlPassPosition.Y;
                 Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.X = {0}", password_X);
                 Trace.TraceInformation("Rudy Trace =>ctrlPassPosition.Y = {0}", password_Y);
-                
-                /*var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
+
+                var patternValue = (ValuePattern)ctrlPassword.GetCurrentPattern(ValuePattern.Pattern);
                 if (patternValue != null)
                     patternValue.SetValue("");
                 else
                 {
                     Trace.TraceInformation("Rudy Trace =>patternValue is null.");
                     return false;
-                }*/
+                }
 
                 App.ClickLeft(password_X, password_Y);
                 Trace.TraceInformation("Rudy Trace =>Foucs Set!");
@@ -843,13 +771,14 @@ namespace DangDangAutoPal.Models
                 await Task.Delay(1000).ConfigureAwait(false);
                 Forms.SendKeys.SendWait("S");
                 Trace.TraceInformation("Rudy Trace =>Send 'S'");
-
                 
+                var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_XPATH, "XPath");
+                btnConfirmToPay.Click();
+                */
+                #endregion
 
-                //var btnConfirmToPay = await WaitForElementAsync(Globals.CONFIRM_TO_PAY_XPATH, "XPath");
-                //btnConfirmToPay.Click();
-
-                Trace.TraceInformation("Rudy Trace =>Tenpay Succeed.");
+                //TODO: waitting for the pay successed page.
+ 
             }
             catch(Exception e)
             {
@@ -861,6 +790,7 @@ namespace DangDangAutoPal.Models
                 return false;
             }
 
+            Trace.TraceInformation("Rudy Trace =>Tenpay Succeed.");
             return true;
         }
 
@@ -870,7 +800,7 @@ namespace DangDangAutoPal.Models
             int nCount = 1;
             bool bSuccess = false;
 
-            bool bRet = await SetDDAccoutInfoAsync(QQAccountFile).ConfigureAwait(false);
+            bool bRet = await SetDDAccoutInfoAsync(Settings.Default.QQAccountFile).ConfigureAwait(false);
             if (bRet)
             {
                 bRet = await CreateDDPalReportAsync(ReportPath).ConfigureAwait(false);
@@ -908,13 +838,13 @@ namespace DangDangAutoPal.Models
             {
                 Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Open browser failed.");
                 return false;
-            }                
+            }
 
-            Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Go to link[{0}]", ProductLink);
+            Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Go to link[{0}]", Settings.Default.ProductLink);
             await Task.Run(() =>
             {
                 Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Page is loading...");
-                driver.Navigate().GoToUrl(ProductLink);
+                driver.Navigate().GoToUrl(Settings.Default.ProductLink);
             }).ConfigureAwait(false);
 
             string PageTitle = driver.Title;
@@ -934,7 +864,7 @@ namespace DangDangAutoPal.Models
                 return false;
             }
 
-            bRet = await PalProductAsync(ProductLink, Account, Password).ConfigureAwait(false);
+            bRet = await PalProductAsync().ConfigureAwait(false);
             if (!bRet)
             {
                 Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Pal Product Failed!");
@@ -955,8 +885,9 @@ namespace DangDangAutoPal.Models
                 return false;
             }
             SuccessPalCount++;
-            await RenewIpAddress().ConfigureAwait(false);
-            
+            await RenewIpAddress();
+            Trace.TraceInformation("Rudy Trace =>AutoPalProcessAsync: Renew IP Finished!");
+            LocalIpAddress = GetIpAddress();
 
             return true;
         }
@@ -1063,6 +994,7 @@ namespace DangDangAutoPal.Models
 
         public async Task RenewIpAddress()
         {
+            Trace.TraceInformation("Rudy Trace =>Renewing the ip...");
             try
             {
                 string DisconnectCMDLine = "rasdial /DISCONNECT";
@@ -1077,7 +1009,6 @@ namespace DangDangAutoPal.Models
             {
                 Trace.TraceInformation("Rudy Trace =>RenewIpAddress: {0};{1}", e.Source, e.Message);
             }
-            LocalIpAddress = GetIpAddress();
         }
 
         public async Task RunCmd(string CmdLine)
