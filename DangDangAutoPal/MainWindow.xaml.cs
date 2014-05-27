@@ -197,7 +197,7 @@ namespace DangDangAutoPal
             //{
                 //if (!Char.IsNumber(tbPalCount.Text, 0))
                 //{
-                //    MessageBox.Show("拍货数量必须是整数", "当当自动拍货");
+            //    MessageBox.Show("拍货数量必须是整数", Globals.DANGDANG_CAPTION);
                     //break;
                 //}
             //}

@@ -301,7 +301,7 @@ namespace DangDangAutoPal.Models
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    System.Windows.MessageBox.Show(e.Message, Globals.DANGDANG_CAPTION);
                     Trace.TraceInformation("Rudy Exception=> CreateDDPalReportAsync： " + e.Source + ";" + e.Message);
                     return false;
                 }
@@ -359,7 +359,7 @@ namespace DangDangAutoPal.Models
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    System.Windows.MessageBox.Show(e.Message, Globals.DANGDANG_CAPTION);
                     Trace.TraceInformation("Rudy Exception=> UpdateDDPalReportAsync： " + e.Source + ";" + e.Message);
                     return false;
                 }
@@ -402,7 +402,7 @@ namespace DangDangAutoPal.Models
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    System.Windows.MessageBox.Show(e.Message, Globals.DANGDANG_CAPTION);
                     Trace.TraceInformation("Rudy Exception=> SetDDAccoutInfoAsync： " + e.Source + ";" + e.Message);
                     return false;
                 }
@@ -452,7 +452,7 @@ namespace DangDangAutoPal.Models
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show(e.Message, "当当自动拍货");
+                    System.Windows.MessageBox.Show(e.Message, Globals.DANGDANG_CAPTION);
                     Trace.TraceInformation("Rudy Exception=> SetAddressAccoutInfoAsync： " + e.Source + ";" + e.Message);
                     return false;
                 }
@@ -1011,7 +1011,7 @@ namespace DangDangAutoPal.Models
 
         public async Task RunCmd(string CmdLine)
         {
-            Task.Run(() =>
+            await Task.Run(() =>
             {
                 Process p = new Process();
                 p.StartInfo.FileName = "cmd.exe";
